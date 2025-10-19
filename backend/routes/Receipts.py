@@ -16,4 +16,4 @@ def add_receipt():
 
 @api.get("/receipts")
 def get_receipts():
-    return {"receipts": receipts}
+    return jsonify(receipts)
