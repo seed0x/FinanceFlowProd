@@ -66,6 +66,7 @@ const Login = () => {
           required 
         />
         <button type="submit">Login</button>
+        <p>Don't have an account? Register here. </p>
       </form>
     </div>
   );
