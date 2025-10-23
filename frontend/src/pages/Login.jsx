@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
-
+const API_URL = import.meta.env.VITE_API_URL; // API URL prefix
 
 //Componenet Declartion 
-const Login = () => {
+const Login = ({ setUser }) => {
   const [formData, setFormData] = useState({
     user: '',
     password: ''
@@ -22,27 +22,24 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    
-    
-    try {
+      try {
 
-	     const response = await fetch('http://127.0.0.1:5000/login', {
-		      method:"POST",
-		      headers: {"Content-Type": "application/json"},
-		      body: JSON.stringify(formData),
-	     });
-    if (response.ok) {
-	       const data = await response.json();
-	       navigate('/dashboard');
-          console.log(data);
-    }else {
-          navigate('/login');
-    }
-    }catch (error) {
+	      const response = await fetch(`${API_URL}/api/login`, {
+		        method:"POST",
+		        headers: {"Content-Type": "application/json"},
+		        body: JSON.stringify(formData),           
+	      });
+          if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('user', data.user);
+            setUser(data.user);
+            navigate('/dashboard');
+          } else {
+            alert('Invalid credentials');
+          }
+      } catch (error) {
 	       console.error('Error:', error);
-    }
-    console.log('Login attempt:', formData);
+      }
   };
 
   return (
