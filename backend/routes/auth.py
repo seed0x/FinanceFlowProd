@@ -1,5 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 
+from models import db, User
+
 auth_bp = Blueprint("auth", __name__)
 
 USERS = {
@@ -10,19 +12,25 @@ USERS = {
 
 @auth_bp.post('/login')
 def login():
-        if request.method == 'POST':
-            
-             data = request.get_json() or {}
-             user = data.get('user') 
-             password = data.get('password')   
-             
-             if user in USERS and USERS[user] == password:
-                session['user'] = user
-                print(f"Session set: {session}")# Debug
-                return {'success': True, 'user': user}, 200  
-             else:
-                print("Login failed")# Debug
-                return {'success': False, 'error': 'Invalid credentials'}, 401
+    data = request.get_json() or {}
+    username = data.get('user')
+    password = data.get('password')
+    if not username or not password:
+        return {'success': False, 'error': 'Missing credentials'}, 400
+    if USERS.get(username) != password:
+        return {'success': False, 'error': 'Invalid credentials'}, 401
+
+    # find-or-create DB user so we can scope data by user_id
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        user = User(username=username)
+        db.session.add(user)
+        db.session.commit()
+
+    session['user'] = username
+    session['user_id'] = user.id
+    return {'success': True, 'user': username}, 200
+
 
 @auth_bp.get('/user')
 def get_current_user():

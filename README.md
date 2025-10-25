@@ -3,9 +3,10 @@
 Team finance tracking app for CSE310 Fall 2025.
 
 ## Team Members
-- Derek 
-- Vlad 
-- David 
+
+- Derek
+- Vlad
+- David
 
 ---
 
@@ -14,6 +15,7 @@ Team finance tracking app for CSE310 Fall 2025.
 FinanceFlow is a web app where users can track their income and expenses. Each user has their own account and can add transactions, view their balance, and see monthly spending.
 
 **What it does:**
+
 - User login/logout with sessions
 - Add transactions (income or expenses)
 - View all your transactions in a list
@@ -24,12 +26,16 @@ FinanceFlow is a web app where users can track their income and expenses. Each u
 ## Tech Stack
 
 ### Backend (Flask + Python)
+
 - **Flask** - Web framework
 - **Flask-CORS** - Handle cross-origin requests from frontend
 - **Flask Sessions** - User authentication with cookies
-- **In-memory storage** - Using Python lists/dicts (no database yet)
+- **Flask-SQLAlchemy** - Database ORM
+- **Flask-Migrate** - Database migrations
+- **SQLite** - Persistent local database
 
 ### Frontend (React + Vite)
+
 - **React 19** - UI framework
 - **Vite 7** - Dev server and build tool
 - **React Router** - Navigation between pages
@@ -43,12 +49,14 @@ FinanceFlow is a web app where users can track their income and expenses. Each u
 -FinaceFlow/
 ├── backend/
 │   ├── app.py              # Main Flask app
-│   ├── storage.py          # Shared data (receipts list)
+│   ├── db.py               # Database setup (SQLAlchemy + Migrate)
+│   ├── models.py           # Database models
+│   ├── seed.py             # Optional seed data
 │   ├── routes/
 │   │   ├── __init__.py
 │   │   ├── auth.py         # Login/logout routes
-│   │   ├── transactions.py # Transaction CRUD
-│   │   └── analytics.py    # Analytics endpoints
+│   │   ├── transactions.py # Transaction CRUD (DB-backed)
+│   │   └── analytics.py    # Analytics endpoints (DB-backed)
 │   └── requirements.txt
 │
 └── frontend/
@@ -75,44 +83,68 @@ FinanceFlow is a web app where users can track their income and expenses. Each u
 ### Backend Setup
 
 1. **Navigate to backend folder:**
+
    ```bash
    cd backend
    ```
 
 2. **Install Python dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Run the Flask server:**
+3. **Create `.env` file:**
+
+   ```
+   SECRET_KEY=dev-change-me
+   DATABASE_URL=sqlite:///financeflow.db
+   FLASK_ENV=development
+   ```
+
+4. **Initialize database:**
+
+   ```bash
+   $env:FLASK_APP="backend.app"
+   flask db init
+   flask db migrate -m "init"
+   flask db upgrade
+   ```
+
+5. **Run the Flask server:**
+
    ```bash
    python app.py
    ```
-   
+
    Server runs on `http://localhost:5000`
 
 ### Frontend Setup
 
 1. **Navigate to frontend folder:**
+
    ```bash
    cd frontend
    ```
 
 2. **Install Node dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Create `.env` file:**
+
    ```
-   VITE_API_URL=http://localhost:5000
+   VITE_API_URL=http://localhost:5000/api
    ```
 
 4. **Run the dev server:**
+
    ```bash
    npm run dev
    ```
-   
+
    App runs on `http://localhost:5173` or `http://localhost:5174`
 
 ---
@@ -121,30 +153,34 @@ FinanceFlow is a web app where users can track their income and expenses. Each u
 
 ### Authentication Routes (`/api`)
 
-| Method | Endpoint | Description | Request Body | Response |
-|--------|----------|-------------|--------------|----------|
-| POST | `/api/login` | User login | `{username, password}` | `{message, user}` |
-| POST | `/api/logout` | User logout | - | `{message}` |
+| Method | Endpoint      | Description | Request Body           | Response          |
+| ------ | ------------- | ----------- | ---------------------- | ----------------- |
+| POST   | `/api/login`  | User login  | `{username, password}` | `{message, user}` |
+| POST   | `/api/logout` | User logout | -                      | `{message}`       |
 
 ### Transaction Routes (`/api`)
 
-| Method | Endpoint | Description | Request Body | Response |
-|--------|----------|-------------|--------------|----------|
-| GET | `/api/transactions` | Get user's transactions | - | `{transactions: [...]}` |
-| POST | `/api/transactions` | Add new transaction | `{category, description, amount, type}` | `{transaction: {...}}` |
+| Method | Endpoint            | Description             | Request Body                            | Response                |
+| ------ | ------------------- | ----------------------- | --------------------------------------- | ----------------------- |
+| GET    | `/api/transactions` | Get user's transactions | -                                       | `{transactions: [...]}` |
+| POST   | `/api/transactions` | Add new transaction     | `{category, description, amount, type}` | `{transaction: {...}}`  |
 
 ### Analytics Routes (`/api`)
 
-| Method | Endpoint | Description | Response |
-|--------|----------|-------------|----------|
-| GET | `/api/totalBalance` | Get user's total balance | `{totalBalance: number}` |
-| GET | `/api/monthlyExpenses` | Get current month total | `{monthlyTotal: number}` |
+| Method | Endpoint                 | Description                         | Response                        |
+| ------ | ------------------------ | ----------------------------------- | ------------------------------- |
+| GET    | `/api/totalBalance`      | Get user's total balance            | `{totalBalance: number}`        |
+| GET    | `/api/totalIncome`       | Get total income                    | `{totalIncome: number}`         |
+| GET    | `/api/totalExpense`      | Get total expenses                  | `{totalExpense: number}`        |
+| GET    | `/api/monthlyExpenses`   | Get current month total             | `{monthlyTotal: number}`        |
+| GET    | `/api/totalTransactions` | Get current month transaction count | `{monthlyTransactions: number}` |
 
 ---
 
 ## How Data Flows
 
 ### 1. Login Flow
+
 ```
 User enters credentials → Frontend POST to /api/login
 → Backend checks USERS dict → Sets session cookie
@@ -153,19 +189,21 @@ User enters credentials → Frontend POST to /api/login
 ```
 
 ### 2. Add Transaction Flow
+
 ```
 User fills form → addTransaction() called
 → Frontend POST to /api/transactions with {category, amount, ...}
-→ Backend checks session → Creates transaction object
-→ Adds to receipts list → Returns {transaction: {...}}
+→ Backend checks session → Saves to database
+→ Returns {transaction: {...}}
 → Frontend adds to state → UI updates instantly
 ```
 
 ### 3. View Transactions Flow
+
 ```
 Dashboard loads → useEffect runs
 → Frontend GET /api/transactions
-→ Backend filters receipts for current user
+→ Backend queries database for current user
 → Returns {transactions: [...]}
 → Frontend stores in state → TransactionList maps and displays
 ```
@@ -175,35 +213,39 @@ Dashboard loads → useEffect runs
 ## Important Notes
 
 ### Sessions & Cookies
+
 - Backend uses Flask sessions with encrypted cookies
 - Cookie setting: `SameSite=Lax` (works on localhost)
 - Frontend must send `credentials: 'include'` in ALL fetch calls
-- Session stores username, used to filter transactions
+- Session stores username and user_id, used to filter transactions
 
 ### Data Storage
-- **Future:** Need to add SQLite or PostgreSQL database
-- `receipts` list in `storage.py` holds all transactions
-- Each transaction has: `{id, user, amount, category, description, type, timestamp}`
+
+- Uses SQLite database through SQLAlchemy
+- Each transaction has: `{id, user_id, amount, category, description, type, date, created_at}`
+- Income stored as positive, expenses stored as negative
 
 ### CORS Configuration
+
 - Backend allows `http://localhost:5173` and `http://localhost:5174`
 - `supports_credentials=True` to allow cookies
 - If frontend runs on different port, update `app.py`
 
 ### Date Format
+
 - Backend stores ISO format: `datetime.now().isoformat()`
-- Example: `"2024-10-24T20:30:45.123456"`
-- Frontend can format for display`
-- Backend queries use `datetime.fromisoformat()` for filtering
+- Example: `"2025-10-25T20:30:45.123456"`
+- Frontend can format for display
+- Backend queries use `date` column for filtering
 
 ---
 
 ## Common Issues & Fixes
 
-
 ## Test Users
 
 Hardcoded users `auth.py`
+
 ```python
 users = {
     'derek': '123',
@@ -218,25 +260,24 @@ Login with any of these to test!
 
 ## What Still Needs Work
 
-- [ ] Add database (SQLite or PostgreSQL)
 - [ ] User registration endpoint
 - [ ] Delete/edit transactions
 - [ ] Charts/graphs for visualizations
 - [ ] Budget tracking
 - [ ] Better error handling
 - [ ] Filter transactions
-- [ ] Eit/delete transactions
-- [ ] Carts/graphs for spending visualization
 
 ---
 
 ## Git Workflow
 
 **Branches:**
+
 - `main` - stable code
 - Create feature branches for new work
 
 **Commits:**
+
 - Backend changes: commit to backend folder
 - Frontend changes: commit to frontend folder
 
@@ -251,4 +292,4 @@ Login with any of these to test!
 
 ---
 
-Last updated: October 24, 2025
+Last updated: October 25, 2025

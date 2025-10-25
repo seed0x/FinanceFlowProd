@@ -1,84 +1,72 @@
-from flask import Blueprint, request, jsonify, session
-from datetime import datetime
-from storage import receipts
-
-
-USERS = {
-    'derek':'123',
-    'vlad':'123',
-    'david':'123'
-}
+from flask import Blueprint, jsonify, session
+from datetime import date
+from sqlalchemy import func
+from models import db, Transaction 
 
 analytics_bp = Blueprint("analytics", __name__)
-# Total Balance
-@analytics_bp.route('/totalBalance', methods=['GET'])
-def get_total_balance():
-    print(f"[ANALYTICS] Session received: {session}")  # Debug
-    print(f"[ANALYTICS] Request headers: {dict(request.headers)}")  # Debug
-    
-    totalBalance=0
-    
-    if 'user' not in session:
-        print("[ANALYTICS] ERROR: No user in session!")  # Debug
-        return {'error': 'Not logged in'}, 401
-    
-    current_user = session['user']
-    print(f"[ANALYTICS] User found: {current_user}")  # Debug
-    
-    receipts_for_user = []
-    for r in receipts:
-        if r.get("user") == current_user:
-            totalBalance+=r.get("amount",0)
-            receipts_for_user.append(r)
 
-    print(totalBalance)
-    return jsonify({"totalBalance": totalBalance}), 200
+def _require_user():
+    if "user_id" not in session:
+        return {"error": "Not logged in"}, 401
+    return None
 
+@analytics_bp.get("/totalBalance")
+def total_balance():
+    not_ok = _require_user()
+    if not_ok: return not_ok
 
-# Monthly Expenses
-@analytics_bp.route('/monthlyExpenses', methods=['GET'])
-def get_monthly_expenses():
-    print(f"[ANALYTICS] Session received: {session}")  # Debug
-    print(f"[ANALYTICS] Request headers: {dict(request.headers)}")  # Debug
-    
-    monthlyTotal=0
-    
-    if 'user' not in session:
-        print("[ANALYTICS] ERROR: No user in session!")  # Debug
-        return {'error': 'Not logged in'}, 401
-    
-    current_user = session['user']
-    print(f"[ANALYTICS] User found: {current_user}")  # Debug
-    
-    now = datetime.now()
-    print(now)  # Debug
-    monthly_receipts = []
-    for r in receipts:
-        if r.get("user") == current_user:
-            timestamp = datetime.fromisoformat(r.get("timestamp"))
-            print(f"Checking timestamp: {timestamp}")  # Debug
-            if timestamp.year == now.year and timestamp.month == now.month:
-                monthlyTotal += r.get("amount")
-                monthly_receipts.append(r)
+    total = db.session.query(func.coalesce(func.sum(Transaction.amount), 0))\
+        .filter(Transaction.user_id == session["user_id"])\
+        .scalar() or 0
+    return jsonify({"totalBalance": float(total)}), 200
 
-   
-    print(monthly_receipts)
-    return jsonify({"monthlyTotal": monthlyTotal}), 200
+@analytics_bp.get("/totalIncome")
+def total_income():
+    not_ok = _require_user()
+    if not_ok: return not_ok
 
+    total = db.session.query(func.coalesce(func.sum(Transaction.amount), 0))\
+        .filter(Transaction.user_id == session["user_id"],
+                Transaction.amount > 0)\
+        .scalar() or 0
+    return jsonify({"totalIncome": float(total)}), 200
 
+@analytics_bp.get("/totalExpense")
+def total_expense():
+    not_ok = _require_user()
+    if not_ok: return not_ok
 
-# Total Transactions
-@analytics_bp.route('/totalTransactions', methods=['GET'])
-def get_monthly_transactions():
+    total = db.session.query(func.coalesce(func.sum(Transaction.amount), 0))\
+        .filter(Transaction.user_id == session["user_id"],
+                Transaction.amount < 0)\
+        .scalar() or 0
+    # UI expects positive expense total
+    return jsonify({"totalExpense": float(abs(total))}), 200
 
-    if 'user' not in session:
-        return {'error': 'Not logged in'}, 401
-    
-    current_user = session['user']
-    
-    for r in receipts:
-        if r.get("user") == current_user:
-            monthlyTransactions+=1
-  
-    print(monthlyTransactions)
-    return jsonify(({"monthlyTransactions": monthlyTransactions}), 200)
+@analytics_bp.get("/monthlyExpenses")
+def monthly_expenses():
+    not_ok = _require_user()
+    if not_ok: return not_ok
+
+    today = date.today()
+    total = db.session.query(func.coalesce(func.sum(Transaction.amount), 0))\
+        .filter(Transaction.user_id == session["user_id"],
+                func.extract("year", Transaction.date) == today.year,
+                func.extract("month", Transaction.date) == today.month,
+                Transaction.amount < 0)\
+        .scalar() or 0
+    # return absolute spend this month
+    return jsonify({"monthlyTotal": float(abs(total))}), 200
+
+@analytics_bp.get("/totalTransactions")
+def monthly_transactions():
+    not_ok = _require_user()
+    if not_ok: return not_ok
+
+    today = date.today()
+    count = db.session.query(func.count(Transaction.id))\
+        .filter(Transaction.user_id == session["user_id"],
+                func.extract("year", Transaction.date) == today.year,
+                func.extract("month", Transaction.date) == today.month)\
+        .scalar() or 0
+    return jsonify({"monthlyTransactions": int(count)}), 200
