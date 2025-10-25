@@ -46,3 +46,7 @@ logs
 # Backend static files and templates (handled by frontend)
 backend/static/
 backend/templates/
+
+/instance/
+*.db
+
