@@ -80,11 +80,9 @@ useEffect(() => {
           if (response.ok) {
             const data = await response.json();
             setTransactions(prev => [data.transaction, ...prev]);
-            console.log(data);
-            alert('Transaction added successfully');
+            console.log('Transaction added successfully:', data);
           } else {
-
-            alert('Invalid transaction data');
+           alert('Invalid transaction data');
           }
       } catch (error) {
 	       console.error('Error:', error);
