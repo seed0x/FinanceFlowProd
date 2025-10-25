@@ -12,28 +12,83 @@ const API_URL = import.meta.env.VITE_API_URL; // API URL prefix
 const navigate = useNavigate();
 const user = localStorage.getItem('user');
 
-
-  // Sample initial transactions until backend is implemented 
+// Sample initial transactions until backend is implemented 
   const [transactions, setTransactions] = useState([]);
+  const [totalBalance, setTotalBalance] = useState(0);
+  const [monthlyTotal, setMonthlyTotal] = useState(0);
 
-  // Calculate stats from transactiions and month totals 
-  const totalBalance = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
-  const thisMonthTransactions = transactions.filter(transaction => {
-    const transactionDate = new Date(transaction.date);
-    const currentDate = new Date();
-    return transactionDate.getMonth() === currentDate.getMonth() && 
-           transactionDate.getFullYear() === currentDate.getFullYear();
-  });
-  const thisMonthTotal = thisMonthTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+useEffect(() => {
+  const fetchTransactions = async () => {
+    try {
+      const response = await fetch(`${API_URL}/transactions`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Backend returned:', data);  // Debug
+        setTransactions(data.transactions || []);  // Default to empty array if undefined
+      } else {
+        console.log('Response not ok:', response.status);  // Debug
+      }
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+    }
+  };
+  
+  fetchTransactions();
+}, []);  // Run once to fetch transactions
+
+  // Fetch analytics data
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        // Fetch total balance
+        const balanceResponse = await fetch(`${API_URL}/totalBalance`, {
+          credentials: 'include',
+        });
+        if (balanceResponse.ok) {
+          const balanceData = await balanceResponse.json();
+          setTotalBalance(balanceData.totalBalance);
+        }
+
+        // Fetch monthly expenses
+        const monthlyResponse = await fetch(`${API_URL}/monthlyExpenses`, {
+          credentials: 'include',
+        });
+        if (monthlyResponse.ok) {
+          const monthlyData = await monthlyResponse.json();
+          setMonthlyTotal(monthlyData.monthlyTotal);
+        }
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      }
+    };
+
+    fetchAnalytics();
+  }, [transactions]);  // Re-fetch when transactions change
 
   // Function to add new transaction
-  const addTransaction = (newTransaction) => {
-    const transaction = {
-      id: Date.now(), // Simple ID generation
-      ...newTransaction,
-      date: new Date().toISOString() // turn date to simple string 
-    };
-    setTransactions(prev => [transaction, ...prev]); // use state to add new transaction
+  const addTransaction = async (newTransaction) => {
+    try {
+      const response = await fetch(`${API_URL}/transactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: 'include',
+        body: JSON.stringify(newTransaction),
+      });
+          if (response.ok) {
+            const data = await response.json();
+            setTransactions(prev => [data.transaction, ...prev]);
+            console.log(data);
+            alert('Transaction added successfully');
+          } else {
+
+            alert('Invalid transaction data');
+          }
+      } catch (error) {
+	       console.error('Error:', error);
+      }
   };
 
 // UI
@@ -44,7 +99,7 @@ const user = localStorage.getItem('user');
       <div className="dashboard-content">
         <StatsGrid 
           totalBalance={totalBalance}
-          monthlyTotal={thisMonthTotal}
+          monthlyTotal={monthlyTotal}
           transactionCount={transactions.length}
         />
         

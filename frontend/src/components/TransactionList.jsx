@@ -1,6 +1,6 @@
 import TransactionItem from './TransactionItem';
 
-function TransactionList({ transactions }) {
+function TransactionList({ transactions}) {
   return (
     <div className="recent-transactions">
             <h2>Recent Transactions</h2>

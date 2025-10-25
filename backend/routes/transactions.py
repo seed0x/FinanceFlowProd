@@ -9,7 +9,6 @@ transactions_bp = Blueprint("transactions", __name__)
 @transactions_bp.route('/transactions', methods=['POST'])
 def add_receipt():
     print(f"[TRANSACTION] Session received: {session}")  # Debug
-    print(f"[TRANSACTION] Request headers: {dict(request.headers)}")  # Debug
     
     if 'user' not in session:
         print("[TRANSACTION] ERROR: No user in session!")  # Debug

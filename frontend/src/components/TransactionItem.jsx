@@ -22,7 +22,7 @@ function TransactionItem({ transaction }) {
       <div className="transaction-info">
         <span className="transaction-category">{transaction.category}</span>
         <span className="transaction-description">{transaction.description}</span>
-        <span className="transaction-date">{formatDate(transaction.date)}</span>
+        <span className="transaction-date">{formatDate(transaction.timestamp)}</span>
       </div>
       <span className={`transaction-amount ${transaction.amount >= 0 ? 'positive' : 'negative'}`}>
         {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}

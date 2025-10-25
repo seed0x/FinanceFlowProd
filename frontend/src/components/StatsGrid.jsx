@@ -7,7 +7,8 @@ function StatsGrid({ totalBalance, monthlyTotal, transactionCount }) {
       <StatsCard 
         title="Total Balance" 
         amount={totalBalance} 
-        isPositive={totalBalance >= 0} 
+        isPositive={totalBalance >= 0}
+        showSign={true} 
       />
       <StatsCard 
         title="This Month" 
