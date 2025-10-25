@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
 const API_URL = import.meta.env.VITE_API_URL; // API URL prefix
 
@@ -23,12 +23,12 @@ const Login = ({ setUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
       try {
-	      const response = await fetch(`${API_URL}/login`, {
+	     const response = await fetch(`${API_URL}/login`, {
 		        method:"POST",
 		        headers: {"Content-Type": "application/json"},
 		        body: JSON.stringify(formData),
             credentials: 'include',           
-	      });
+	     });
           if (response.ok) {
             const data = await response.json();
             localStorage.setItem('user', data.user);
@@ -63,7 +63,7 @@ const Login = ({ setUser }) => {
           required 
         />
         <button type="submit">Login</button>
-        <p>Don't have an account? Register here. </p>
+        <p>Don't have an account? <Link to="/Signup"> Sign up here. </Link> </p>
       </form>
     </div>
   );
