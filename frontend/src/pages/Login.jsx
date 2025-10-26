@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
-const API_URL = import.meta.env.VITE_API_URL; // API URL prefix
 
+const API_URL = import.meta.env.VITE_API_URL; // API URL prefix
 //Componenet Declartion 
 const Login = ({ setUser }) => {
+  
   const [formData, setFormData] = useState({
     user: '',
     password: ''
@@ -27,7 +28,7 @@ const Login = ({ setUser }) => {
 		        method:"POST",
 		        headers: {"Content-Type": "application/json"},
 		        body: JSON.stringify(formData),
-            credentials: 'include',           
+                credentials: 'include',           
 	     });
           if (response.ok) {
             const data = await response.json();
