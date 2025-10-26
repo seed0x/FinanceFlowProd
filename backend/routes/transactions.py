@@ -17,24 +17,27 @@ def _to_dict(t: Transaction):
         "merchant": t.merchant,
         "type": ("income" if t.amount and float(t.amount) > 0 else "expense"),
         "timestamp": t.created_at.isoformat() if t.created_at else datetime.now().isoformat(),
-        "user": session.get("user"),
+        "user": session.get('user'),
     }
 
 @transactions_bp.get("/transactions")
 def list_transactions():
-    if "user_id" not in session:
+    if 'user' not in session:
         return {"error": "Not logged in"}, 401
-    uid = session["user_id"]
+    
+    uid = session['user_id']
     items = (Transaction.query
              .filter_by(user_id=uid)
              .order_by(Transaction.date.desc(), Transaction.id.desc())
              .all())
     return jsonify({"transactions": [_to_dict(t) for t in items]}), 200
 
+
 @transactions_bp.post("/transactions")
 def create_transaction():
-    if "user_id" not in session:
+    if "user" not in session:
         return {"error": "Not logged in"}, 401
+    
     uid = session["user_id"]
     data = request.get_json() or {}
 

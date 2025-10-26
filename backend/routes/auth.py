@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify, session
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 from models import db, User
 
@@ -15,21 +17,27 @@ def login():
     data = request.get_json() or {}
     username = data.get('user')
     password = data.get('password')
-    if not username or not password:
-        return {'success': False, 'error': 'Missing credentials'}, 400
-    if USERS.get(username) != password:
+    user = User.query.filter_by(username=username).first()
+    
+    if not user:
+        # Create new user if doesn't exist
+        hashed_password = generate_password_hash(password)
+        user = User(username=username, password=hashed_password)
+        db.session.add(user)
+        db.session.commit()
+    
+    if user and check_password_hash(user.password, password):
+        session['user'] = username
+        session['user_id'] = user.id
+        print(f"Session set: {session}")  # Debug
+        return {'success': True, 'user': username}, 200
+    else:
+        print("Login failed")  # Debug
+        return {'success': False, 'error': 'Invalid credentials'}, 401
+        db.session.commit()
         return {'success': False, 'error': 'Invalid credentials'}, 401
 
     # find-or-create DB user so we can scope data by user_id
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        user = User(username=username)
-        db.session.add(user)
-        db.session.commit()
-
-    session['user'] = username
-    session['user_id'] = user.id
-    return {'success': True, 'user': username}, 200
 
 
 @auth_bp.get('/user')
