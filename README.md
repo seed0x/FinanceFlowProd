@@ -242,6 +242,26 @@ Dashboard loads → useEffect runs
 
 ## Common Issues & Fixes
 
+- Druing development the database will be changing, if you have migration issues, please follow these steps:
+
+1. ** Navigate to backend/instance **
+
+```
+cd back/instance
+```
+2. ** Delete finaceflow.db **
+```
+rm financeflow.db
+```
+3. ** Navigate to backend folder **
+```
+cd ..
+```
+4. ** Create fresh Databse **
+```
+flask db upgrade
+```
+
 ## Test Users
 
 Hardcoded users `auth.py`
