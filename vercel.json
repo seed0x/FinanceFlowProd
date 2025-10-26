@@ -1,13 +1,8 @@
 {
-  "version": 2,
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/dist",
+  "installCommand": "echo 'Skipping install'",
   "builds": [
-    {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "frontend/dist"
-      }
-    },
     {
       "src": "backend/app.py",
       "use": "@vercel/python"
@@ -19,9 +14,11 @@
       "dest": "backend/app.py"
     },
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
-      "dest": "frontend/dist/$1"
+      "dest": "/index.html"
     }
-  ],
-  "outputDirectory": "frontend/dist"
+  ]
 }
