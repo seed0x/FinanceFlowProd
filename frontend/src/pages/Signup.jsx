@@ -61,7 +61,7 @@ export default function Signup() {
           required
         />
         <button type="submit">Create Account</button>
-        <p>
+        <p className="helper-text">
           Already have an account? <Link to="/login">Login here.</Link>
         </p>
       </form>

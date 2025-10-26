@@ -64,7 +64,7 @@ const Login = ({ setUser }) => {
           required 
         />
         <button type="submit">Login</button>
-        <p>Don't have an account? <Link to="/Signup"> Sign up here. </Link> </p>
+        <p className="helper-text">Don't have an account? <Link to="/Signup"> Sign up here. </Link> </p>
       </form>
     </div>
   );

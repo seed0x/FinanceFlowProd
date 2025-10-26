@@ -1,6 +1,7 @@
+/* Login & Signup Styling (green & white to match dashboard) */
 .login-page {
-  background: #e0e0eb;
-  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   display: flex;
   height: 100vh;
   justify-content: center;
@@ -8,48 +9,106 @@
 }
 
 .login-container {
-  background: #7575a3;
+  background: #ffffff;
   padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  width: 300px;
+  border-radius: 16px;
+  width: 320px;
+  box-shadow: 0 8px 30px rgba(46, 204, 113, 0.12);
+  border: 1px solid rgba(46, 204, 113, 0.15);
 }
 
 .login-container h2 {
   text-align: center;
   margin-bottom: 24px;
-  color: #ffffff;
+  color: #27ae60; 
+  font-weight: 700;
+  letter-spacing: -0.3px;
 }
-
+/* input behavior */
 .login-container input[type="text"],
 .login-container input[type="password"],
 .login-container input[type="email"] {
   width: 100%;
-  padding: 12px;
+  padding: 12px 14px;
   margin: 8px 0 16px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border: 1px solid #e1e5ea;
+  border-radius: 10px;
   box-sizing: border-box;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-size: 0.95rem;
 }
 
+.login-container input[type="text"]:focus,
+.login-container input[type="password"]:focus,
+.login-container input[type="email"]:focus {
+  border-color: #2ecc71;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.15);
+}
+
+/* Login / Sign Up action button */
 .login-container button {
   width: 100%;
   padding: 12px;
-  background-color: #ccb3ff;
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
   border: none;
   color: white;
-  font-weight: bold;
-  border-radius: 6px;
+  font-weight: 700;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: transform 0.12s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  letter-spacing: 0.2px;
 }
 
 .login-container button:hover {
-  background-color: #434190;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(46, 204, 113, 0.25);
 }
 
+.login-container button:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 16px rgba(46, 204, 113, 0.18);
+}
+
+/* Messages */
 .message {
   text-align: center;
-  color: red;
-  margin-top: 10px;
+  margin-top: 12px;
+  font-size: 0.92rem;
 }
+
+.message.error {
+  color: #e74c3c;
+}
+
+.message.success {
+  color: #27ae60;
+}
+
+/* Small helper text (e.g., “Forgot password?”, “Have an account?”) */
+.helper-text {
+  text-align: center;
+  margin-top: 10px;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.helper-text a {
+  color: #27ae60;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.helper-text a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .login-container {
+    width: 90%;
+    padding: 28px;
+  }
+}
+
