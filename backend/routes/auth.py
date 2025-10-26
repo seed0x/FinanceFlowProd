@@ -6,12 +6,6 @@ from models import db, User
 
 auth_bp = Blueprint("auth", __name__)
 
-USERS = {
-    'derek':'123',
-    'vlad':'123',
-    'david':'123'
-}
-
 @auth_bp.post('/login')
 def login():
     data = request.get_json() or {}
