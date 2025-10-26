@@ -28,7 +28,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 init_db(app)
 
 # CORS 
-CORS(app, supports_credentials=True, origins=["http://localhost:5173", "http://localhost:5174"])
+CORS(app, supports_credentials=True, origins=["http://localhost:5173", "http://localhost:5174", "https://finaceflow.onrender.com"])
 
 # Register blueprints
 app.register_blueprint(transactions_bp, url_prefix="/api")
