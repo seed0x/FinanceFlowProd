@@ -33,7 +33,7 @@ CORS(app, supports_credentials=True, origins=[
     "http://localhost:5174", 
     "https://finaceflow.onrender.com",
     "https://finance-flow-rust.vercel.app"
-])
+], origin_regex=r"https://.*\.vercel\.app")
 
 # Register blueprints
 app.register_blueprint(transactions_bp, url_prefix="/api")
