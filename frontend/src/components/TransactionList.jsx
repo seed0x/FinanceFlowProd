@@ -7,7 +7,7 @@ function TransactionList({ transactions}) {
             <div className="transactions-list">
               {transactions.length === 0 ? (
                 <div className="no-transactions">
-                  <p>No transactions yet. Add your first transaction above!</p>
+                  <p>No transactions yet. Add your first transaction!</p>
                 </div>
               ) : (
                 transactions.map(transaction => (
