@@ -1,6 +1,4 @@
-
 import os
-
 from flask_cors import CORS
 from flask import Flask, render_template, jsonify, request, redirect, url_for,session
 from dotenv import load_dotenv
@@ -13,9 +11,10 @@ app = Flask(__name__)
 
 # CONFIG 
 app.secret_key = 't1am4-4t2am-t1am4-4t3am'
-app.config['SESSION_COOKIE_SAMESITE'] = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
-app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', 'False') == 'True'
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = False  # Set True in production with HTTPS
 app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_DOMAIN'] = 'localhost'
 
 # right now SQLite by default, override with DATABASE_URL for getting Postgres
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(

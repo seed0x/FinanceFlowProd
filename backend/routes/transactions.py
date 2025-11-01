@@ -26,10 +26,12 @@ def list_transactions():
         return {"error": "Not logged in"}, 401
     
     uid = session['user_id']
+    print(f"Fetching transactions for user={session.get('user')}, user_id={uid}")  # Debug
     items = (Transaction.query
              .filter_by(user_id=uid)
              .order_by(Transaction.date.desc(), Transaction.id.desc())
              .all())
+    print(f"Found {len(items)} transactions")  # Debug
     return jsonify({"transactions": [_to_dict(t) for t in items]}), 200
 
 

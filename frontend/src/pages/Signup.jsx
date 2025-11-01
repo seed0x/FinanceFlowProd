@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './Login.css'; // using same styles for now might put into Signup.css later 
+
+ const API_URL = import.meta.env.VITE_API_URL; // API URL prefix
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -10,6 +12,8 @@ export default function Signup() {
     confirmPassword: ''
   });
 
+  const navigate = useNavigate();
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -18,9 +22,24 @@ export default function Signup() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // just log the data
+    try {
+	     const response = await fetch(`${API_URL}/signup`, {
+		        method:"POST",
+		        headers: {"Content-Type": "application/json"},
+		        body: JSON.stringify(formData),
+            credentials: 'include',           
+	     });
+          if (response.ok) {
+            const data = await response.json();
+            navigate('/login');
+          } else {
+            alert('Invalid credentials');
+          }
+      } catch (error) {
+	       console.error('Error:', error);
+      }
     console.log('Signup data:', formData);
   };
 

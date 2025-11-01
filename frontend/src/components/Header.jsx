@@ -16,7 +16,7 @@ const API_URL = import.meta.env.VITE_API_URL; // API URL prefix
       });
           if (response.ok) {
             const data = await response.json();
-            
+            localStorage.removeItem('user');
             navigate('/login');
             console.log('Log-out Succesfully:', data);
           } else {
