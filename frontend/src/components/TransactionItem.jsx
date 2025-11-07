@@ -20,7 +20,7 @@ function TransactionItem({ transaction }) {
   return (
     <div className={`transaction-item ${transaction.type === 'income' ? 'income-card' : 'expense-card'}`}>
       <div className="transaction-info">
-        <span className="transaction-category">{transaction.category}</span>
+        <span className={transaction.type === 'income' ? 'transaction-category-green' : 'transaction-category-red'}>{transaction.category}</span>
         <span className="transaction-description">{transaction.description}</span>
         <span className="transaction-date">{formatDate(transaction.timestamp)}</span>
       </div>

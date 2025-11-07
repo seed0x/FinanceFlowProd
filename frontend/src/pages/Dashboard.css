@@ -171,10 +171,18 @@
   flex: 1;
 }
 
-.transaction-category {
+.transaction-category-green {
   font-size: 0.8rem;
   font-weight: 600;
   color: #2ecc71;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.transaction-category-red {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: red;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
