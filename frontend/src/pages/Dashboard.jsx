@@ -3,6 +3,7 @@ import AddTransaction from '../components/addTransaction';
 import Header from '../components/Header';
 import StatsGrid from '../components/StatsGrid';
 import TransactionList from '../components/TransactionList';
+import Budget from '../components/Budget'
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
   
@@ -108,6 +109,9 @@ useEffect(() => {
           </div>
           
           <TransactionList transactions={transactions} />
+        </div>
+        <div className="budget-section">
+          <Budget monthlyTotal={monthlyTotal}/>
         </div>
       </div>
     </div>
