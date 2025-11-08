@@ -18,6 +18,12 @@
   font-weight: 600;
 }
 
+.budget-content-wrapper {
+  display: flex;
+  gap: 5rem;
+  align-items: center;
+}
+
 .budget-form {
   display: flex;
   flex-direction: column;
@@ -78,9 +84,10 @@
 }
 
 .budget-display {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e0e0e0;
+  flex: 1;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .budget-info {

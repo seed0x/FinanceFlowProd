@@ -6,8 +6,8 @@ function Budget({ monthlyTotal }) {
   const [budgetInput, setBudgetInput] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Fetch current budget from analytics api
-  useEffect(() => {
+  // Fetch current budget from analytics api (commented out until routes setup)
+ /* useEffect(() => {
     const fetchBudget = async () => {
       try {
         const response = await fetch(`/api/analytics/getBudget`, {
@@ -28,7 +28,7 @@ function Budget({ monthlyTotal }) {
 
     fetchBudget();
   }, []);
-
+*/
   const handleSetBudget = async (e) => {
     e.preventDefault();
     
@@ -39,10 +39,11 @@ function Budget({ monthlyTotal }) {
       alert('Please enter a valid budget amount');
       return;
     }
+   setBudget(budgetAmount);
 
-    setLoading(true);
-
-    try {
+  //  all commented out until routes set up
+ //   setLoading(true);
+ /*    try {
       const response = await fetch(`api/analytics/setBudget`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,6 +65,7 @@ function Budget({ monthlyTotal }) {
     } finally {
       setLoading(false);
     }
+*/
   };
 
   return (
@@ -71,7 +73,7 @@ function Budget({ monthlyTotal }) {
       <div className="budget-header">
         <h2>Monthly Budget</h2>
       </div>
-
+<div className="budget-content-wrapper">
       <form onSubmit={handleSetBudget} className="budget-form">
         <div className="form-group">
           <label htmlFor="budget-amount">Monthly Budget ($)</label>
@@ -104,6 +106,7 @@ function Budget({ monthlyTotal }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
