@@ -173,20 +173,20 @@ FinanceFlow is a web app where users can track their income and expenses. Each u
 
 ### Analytics Routes (`/api`)
 
-|| Method | Endpoint                 | Description                         | Response                        |
-|| ------ | ------------------------ | ----------------------------------- | ------------------------------- |
-|| GET    | `/api/totalBalance`      | Get user's total balance            | `{totalBalance: number}`        |
-|| GET    | `/api/totalIncome`       | Get total income                    | `{totalIncome: number}`         |
-|| GET    | `/api/totalExpense`      | Get total expenses                  | `{totalExpense: number}`        |
-|| GET    | `/api/monthlyExpenses`   | Get current month total             | `{monthlyTotal: number}`        |
-|| GET    | `/api/totalTransactions` | Get current month transaction count | `{monthlyTransactions: number}` |
+| Method | Endpoint                 | Description                         | Response                        |
+| ------ | ------------------------ | ----------------------------------- | ------------------------------- |
+| GET    | `/api/totalBalance`      | Get user's total balance            | `{totalBalance: number}`        |
+| GET    | `/api/totalIncome`       | Get total income                    | `{totalIncome: number}`         |
+| GET    | `/api/totalExpense`      | Get total expenses                  | `{totalExpense: number}`        |
+| GET    | `/api/monthlyExpenses`   | Get current month total             | `{monthlyTotal: number}`        |
+| GET    | `/api/totalTransactions` | Get current month transaction count | `{monthlyTransactions: number}` |
 
 ### Budgets Routes (`/api/budgets`)
 
-|| Method | Endpoint                    | Description                            | Request Body                              | Response                                 |
-|| ------ | --------------------------- | -------------------------------------- | ----------------------------------------- | ---------------------------------------- |
-|| GET    | `/api/budgets/getBudgets`   | List budgets for current month         | -                                         | `{month, budgets: [{category,budget,spent,remaining,active}], [budget], [category]}` |
-|| POST   | `/api/budgets/setBudget`    | Create a budget for a category/month   | `{category: string, budget: number}`      | `{id, category, budget, month}`          |
+| Method | Endpoint                    | Description                            | Request Body                              | Response                                 |
+| ------ | --------------------------- | -------------------------------------- | ----------------------------------------- | ---------------------------------------- |
+| GET    | `/api/budgets/getBudgets`   | List budgets for current month         | -                                         | `{month, budgets: [{category,budget,spent,remaining,active}], [budget], [category]}` |
+| POST   | `/api/budgets/setBudget`    | Create a budget for a category/month   | `{category: string, budget: number}`      | `{id, category, budget, month}`          |
 
 ---
 
@@ -281,20 +281,6 @@ flask db upgrade
 ```
 
 - CORS/session errors: ensure frontend requests include `credentials: 'include'` and that the backend `CORS(..., supports_credentials=True, origins=[http://localhost:5173, http://localhost:5174])` matches your dev port.
-
-## Test Users
-
-Hardcoded users `auth.py`
-
-```python
-users = {
-    'derek': '123',
-    'vlad': '123',
-    'david': '123'
-}
-```
-
-Login with any of these to test!
 
 ---
 
