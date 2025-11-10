@@ -56,7 +56,8 @@ FinanceFlow is a web app where users can track their income and expenses. Each u
 │   │   ├── __init__.py
 │   │   ├── auth.py         # Login/logout routes
 │   │   ├── transactions.py # Transaction CRUD (DB-backed)
-│   │   └── analytics.py    # Analytics endpoints (DB-backed)
+│   │   ├── analytics.py    # Analytics endpoints (DB-backed)
+│   │   └── budgets.py      # Budget endpoints (per-category monthly)
 │   └── requirements.txt
 │
 └── frontend/
@@ -104,10 +105,15 @@ FinanceFlow is a web app where users can track their income and expenses. Each u
 
 4. **Initialize database:**
 
+   ```powershell
+   # PowerShell (Windows)
+   $env:FLASK_APP="app"
+   flask db upgrade
+   ```
+
    ```bash
-   $env:FLASK_APP="backend.app"
-   flask db init
-   flask db migrate -m "init"
+   # bash/zsh (macOS/Linux)
+   export FLASK_APP=app
    flask db upgrade
    ```
 
@@ -167,13 +173,20 @@ FinanceFlow is a web app where users can track their income and expenses. Each u
 
 ### Analytics Routes (`/api`)
 
-| Method | Endpoint                 | Description                         | Response                        |
-| ------ | ------------------------ | ----------------------------------- | ------------------------------- |
-| GET    | `/api/totalBalance`      | Get user's total balance            | `{totalBalance: number}`        |
-| GET    | `/api/totalIncome`       | Get total income                    | `{totalIncome: number}`         |
-| GET    | `/api/totalExpense`      | Get total expenses                  | `{totalExpense: number}`        |
-| GET    | `/api/monthlyExpenses`   | Get current month total             | `{monthlyTotal: number}`        |
-| GET    | `/api/totalTransactions` | Get current month transaction count | `{monthlyTransactions: number}` |
+|| Method | Endpoint                 | Description                         | Response                        |
+|| ------ | ------------------------ | ----------------------------------- | ------------------------------- |
+|| GET    | `/api/totalBalance`      | Get user's total balance            | `{totalBalance: number}`        |
+|| GET    | `/api/totalIncome`       | Get total income                    | `{totalIncome: number}`         |
+|| GET    | `/api/totalExpense`      | Get total expenses                  | `{totalExpense: number}`        |
+|| GET    | `/api/monthlyExpenses`   | Get current month total             | `{monthlyTotal: number}`        |
+|| GET    | `/api/totalTransactions` | Get current month transaction count | `{monthlyTransactions: number}` |
+
+### Budgets Routes (`/api/budgets`)
+
+|| Method | Endpoint                    | Description                            | Request Body                              | Response                                 |
+|| ------ | --------------------------- | -------------------------------------- | ----------------------------------------- | ---------------------------------------- |
+|| GET    | `/api/budgets/getBudgets`   | List budgets for current month         | -                                         | `{month, budgets: [{category,budget,spent,remaining,active}], [budget], [category]}` |
+|| POST   | `/api/budgets/setBudget`    | Create a budget for a category/month   | `{category: string, budget: number}`      | `{id, category, budget, month}`          |
 
 ---
 
@@ -206,6 +219,15 @@ Dashboard loads → useEffect runs
 → Backend queries database for current user
 → Returns {transactions: [...]}
 → Frontend stores in state → TransactionList maps and displays
+```
+
+### 4. Budgets Flow
+
+```
+User selects category + amount → Frontend POST /api/budgets/setBudget {category, budget}
+→ Backend saves a budget row for the current month
+→ Frontend updates the per-category budget card
+→ Frontend GET /api/budgets/getBudgets to refresh all cards (optional)
 ```
 
 ---
@@ -242,25 +264,23 @@ Dashboard loads → useEffect runs
 
 ## Common Issues & Fixes
 
-- Druing development the database will be changing, if you have migration issues, please follow these steps:
+- If you add or change models (e.g., Budget), run migrations:
 
-1. ** Navigate to backend/instance **
-
-```
-cd back/instance
-```
-2. ** Delete finaceflow.db **
-```
-rm financeflow.db
-```
-3. ** Navigate to backend folder **
-```
-cd ..
-```
-4. ** Create fresh Databse **
-```
+```powershell
+# PowerShell (Windows)
+$env:FLASK_APP="app"
+flask db migrate -m "update models"
 flask db upgrade
 ```
+
+```bash
+# bash/zsh (macOS/Linux)
+export FLASK_APP=app
+flask db migrate -m "update models"
+flask db upgrade
+```
+
+- CORS/session errors: ensure frontend requests include `credentials: 'include'` and that the backend `CORS(..., supports_credentials=True, origins=[http://localhost:5173, http://localhost:5174])` matches your dev port.
 
 ## Test Users
 
@@ -283,7 +303,7 @@ Login with any of these to test!
 - [ ] User registration endpoint
 - [ ] Delete/edit transactions
 - [ ] Charts/graphs for visualizations
-- [ ] Budget tracking
+- [ ] Budget reporting (update existing category/month and summaries)
 - [ ] Better error handling
 - [ ] Filter transactions
 
@@ -312,4 +332,4 @@ Login with any of these to test!
 
 ---
 
-Last updated: October 25, 2025
+Last updated: November 10, 2025
