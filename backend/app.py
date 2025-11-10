@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask import Flask, render_template, jsonify, request, redirect, url_for,session
 from dotenv import load_dotenv
 load_dotenv()
-from routes import transactions_bp, analytics_bp, auth_bp
+from routes import transactions_bp, analytics_bp, auth_bp, budgets_bp
 
 from db import init_db
 
@@ -38,6 +38,7 @@ CORS(app, supports_credentials=True, origins=[
 app.register_blueprint(transactions_bp, url_prefix="/api")
 app.register_blueprint(analytics_bp, url_prefix="/api")
 app.register_blueprint(auth_bp, url_prefix="/api")
+app.register_blueprint(budgets_bp, url_prefix="/api")
 
 
 if __name__ == "__main__":

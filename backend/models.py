@@ -22,3 +22,12 @@ class Transaction(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship("User", back_populates="transactions")
+
+class Budgets(db.Model):
+    __tablename__ = "budgets"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    category = db.Column(db.String(64), nullable=False)    
+    amount = db.Column(db.Numeric(12, 2), nullable=False)  
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

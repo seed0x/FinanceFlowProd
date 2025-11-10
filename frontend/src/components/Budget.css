@@ -85,9 +85,28 @@
 
 .budget-display {
   flex: 1;
-  margin-top: 0;
-  padding-top: 0;
-  border-top: none;
+}
+
+.budget-card {
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+}
+
+.budget-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.budget-title {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .budget-info {

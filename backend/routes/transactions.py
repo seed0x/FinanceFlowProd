@@ -19,7 +19,7 @@ def _to_dict(t: Transaction):
         "timestamp": t.created_at.isoformat() if t.created_at else datetime.now().isoformat(),
         "user": session.get('user'),
     }
-
+#--------------------------------------------------------------------------------------------
 @transactions_bp.get("/transactions")
 def list_transactions():
     if 'user' not in session:
@@ -34,7 +34,7 @@ def list_transactions():
     print(f"Found {len(items)} transactions")  # Debug
     return jsonify({"transactions": [_to_dict(t) for t in items]}), 200
 
-
+#-------------------------------------------------------------------------------------------
 @transactions_bp.post("/transactions")
 def create_transaction():
     if "user" not in session:
@@ -51,7 +51,7 @@ def create_transaction():
     except Exception:
         return {"error": "Invalid amount"}, 400
 
-    # 🔧 Normalize sign based on optional 'type' from UI
+    #Normalize sign based on optional 'type' from UI
     tx_type = (data.get("type") or "").lower()
     if tx_type == "expense" and amt > 0:
         amt = -amt

@@ -74,3 +74,6 @@ def monthly_transactions():
                 func.extract("month", Transaction.date) == today.month)\
         .scalar() or 0
     return jsonify({"monthlyTransactions": int(count)}), 200
+#-----------------------------------------------------------------------
+
+
