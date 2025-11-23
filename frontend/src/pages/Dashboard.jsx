@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import StatsGrid from '../components/StatsGrid';
 import TransactionList from '../components/TransactionList';
 import Budget from '../components/Budget'
+import SpendingChart from '../components/SpendingChart'
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
   
@@ -17,6 +18,29 @@ const user = localStorage.getItem('user');
   const [transactions, setTransactions] = useState([]);
   const [totalBalance, setTotalBalance] = useState(0);
   const [monthlyTotal, setMonthlyTotal] = useState(0);
+  const [spendingData, setSpendingData] = useState([]);
+
+  useEffect(() => {
+    // Calculate spending by category from transactions
+    const spendingByCategory = {};
+    
+    transactions.forEach(transaction => {
+      // Only count expenses (negative amounts)
+      if (transaction.amount < 0) {
+        const category = transaction.category || 'Other';
+        const amount = Math.abs(transaction.amount);
+        spendingByCategory[category] = (spendingByCategory[category] || 0) + amount;
+      }
+    });
+    
+    // Convert to array format for the chart
+    const chartData = Object.entries(spendingByCategory).map(([category, amount]) => ({
+      category,
+      amount: parseFloat(amount.toFixed(2))
+    }));
+    
+    setSpendingData(chartData);
+  }, [transactions]);
 
 useEffect(() => {
   const fetchTransactions = async () => {
@@ -112,6 +136,9 @@ useEffect(() => {
         </div>
         <div className="budget-section">
           <Budget monthlyTotal={monthlyTotal}/>
+        </div>
+        <div className="spending-chart-section">
+          <SpendingChart spendingData={spendingData} /> 
         </div>
       </div>
     </div>
