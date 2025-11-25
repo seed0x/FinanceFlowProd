@@ -1,13 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './AddTransaction.css';
 
 function AddTransaction({ onAddTransaction }) {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [transactionType, setTransactionType] = useState('expense');
+  const [accountId, setAccountId] = useState('');
+  const [accounts, setAccounts] = useState([]);
+  const [categories, setCategories] = useState(['Food', 'Transport', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Other']);
 
-  const categories = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Other'];
+  // Fetch accounts and categories when component loads
+  useEffect(() => {
+    const fetchAccounts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/accounts`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setAccounts(data.accounts || []);
+        }
+      } catch (error) {
+        console.error('Error fetching accounts:', error);
+      }
+    };
+    
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/transactions`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const txs = data.transactions || [];
+          // Get unique categories from existing transactions
+          const uniqueCategories = [...new Set(txs.map(t => t.category).filter(Boolean))];
+          if (uniqueCategories.length > 0) {
+            // Filter out 'Other' if it exists, then add it at the end
+            const filteredCategories = uniqueCategories.filter(cat => cat !== 'Other');
+            setCategories([...filteredCategories.sort(), 'Other']);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    
+    fetchAccounts();
+    fetchCategories();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +64,8 @@ function AddTransaction({ onAddTransaction }) {
       category,
       description,
       amount: transactionType === 'expense' ? -Math.abs(parseFloat(amount)) : Math.abs(parseFloat(amount)),
-      type: transactionType
+      type: transactionType,
+      account_id: accountId ? parseInt(accountId) : null
     };
 
     // Call the parent function to add the transaction
@@ -32,6 +76,7 @@ function AddTransaction({ onAddTransaction }) {
     setDescription('');
     setAmount('');
     setTransactionType('expense');
+    setAccountId('');
   };
 
   return (
@@ -54,6 +99,22 @@ function AddTransaction({ onAddTransaction }) {
             Income
           </button>
         </div>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="account">Account (Optional)</label>
+        <select 
+          id="account"
+          value={accountId} 
+          onChange={(e) => setAccountId(e.target.value)}
+        >
+          <option value="">No Account</option>
+          {accounts.map(acc => (
+            <option key={acc.id} value={acc.id}>
+              {acc.name} {acc.mask ? `(...${acc.mask})` : ''}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="form-group">

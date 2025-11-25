@@ -1,5 +1,7 @@
-function TransactionItem({ transaction }) {
-    // Format currency function
+function TransactionItem({ transaction, onDelete }) {
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Format currency function
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -7,7 +9,7 @@ function TransactionItem({ transaction }) {
     }).format(Math.abs(amount)); 
   };
 
-  // Format date funcition
+  // Format date function
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
@@ -17,6 +19,29 @@ function TransactionItem({ transaction }) {
     });
   };
 
+  // Delete transaction
+  const handleDelete = async () => {
+    if (!confirm('Delete this transaction?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/transactions/${transaction.id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        onDelete(transaction.id);
+      } else {
+        alert('Failed to delete transaction');
+      }
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      alert('Error deleting transaction');
+    }
+  };
+
   return (
     <div className={`transaction-item ${transaction.type === 'income' ? 'income-card' : 'expense-card'}`}>
       <div className="transaction-info">
@@ -24,9 +49,12 @@ function TransactionItem({ transaction }) {
         <span className="transaction-description">{transaction.description}</span>
         <span className="transaction-date">{formatDate(transaction.timestamp)}</span>
       </div>
-      <span className={`transaction-amount ${transaction.amount >= 0 ? 'positive' : 'negative'}`}>
-        {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
-      </span>
+      <div className="transaction-actions">
+        <span className={`transaction-amount ${transaction.amount >= 0 ? 'positive' : 'negative'}`}>
+          {transaction.amount >= 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+        </span>
+        <button onClick={handleDelete} className="delete-btn">×</button>
+      </div>
     </div>
   );
 }

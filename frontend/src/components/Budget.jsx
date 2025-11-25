@@ -2,13 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import './Budget.css';
 
 function Budget({ monthlyTotal }) {
-  const API_URL = import.meta.env.VITE_API_URL; // e.g., http://localhost:5000/api
+  const API_URL = import.meta.env.VITE_API_URL; 
   const [category, setCategory] = useState('');
   const [budgets, setBudgets] = useState([]);   // array of budgets from backend
   const [budgetInput, setBudgetInput] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const categories = ['Food', 'Transport', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Other'];
+  const [categories, setCategories] = useState(['Food', 'Transport', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Other']);
 
 //---------------------------------------------------------------------------
   
@@ -19,54 +18,48 @@ function Budget({ monthlyTotal }) {
   
 //---------------------------------------------------------------------------
       
-  // Fetch all budgets from budgets api 
-  // COMMENTED OUT FOR STYLING - USING DUMMY DATA
-  // useEffect(() => {
-  //   const fetchBudgets = async () => {
-  //     try {
-  //       const response = await fetch(`${API_URL}/budgets/getBudgets`, {
-  //         credentials: 'include'
-  //       });
-  //       
-  //       if (response.ok) {
-  //         const data = await response.json();
-  //         if (data.budgets && Array.isArray(data.budgets)) {
-  //           setBudgets(data.budgets);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching budgets:', error);
-  //     }
-  //   };
-
-  //   fetchBudgets();
-  // }, []);
-
-  // DUMMY DATA FOR STYLING
+  // Fetch all budgets from budgets api
   useEffect(() => {
-    setBudgets([
-      {
-        category: 'Food',
-        month: '2024-01',
-        budget: 500.00,
-        spent: 320.50,
-        remaining: 179.50
-      },
-      {
-        category: 'Transport',
-        month: '2024-01',
-        budget: 200.00,
-        spent: 185.00,
-        remaining: 15.00
-      },
-      {
-        category: 'Entertainment',
-        month: '2024-01',
-        budget: 150.00,
-        spent: 45.00,
-        remaining: 105.00
+    const fetchBudgets = async () => {
+      try {
+        const response = await fetch(`${API_URL}/budgets/getBudgets`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.budgets && Array.isArray(data.budgets)) {
+            setBudgets(data.budgets);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching budgets:', error);
       }
-    ]);
+    };
+
+    fetchBudgets();
+    
+    // Fetch categories from transactions
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/transactions`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const txs = data.transactions || [];
+          const uniqueCategories = [...new Set(txs.map(t => t.category).filter(Boolean))];
+          if (uniqueCategories.length > 0) {
+            // Filter out Other if it exists, then add it at the end
+            const filteredCategories = uniqueCategories.filter(cat => cat !== 'Other');
+            setCategories([...filteredCategories.sort(), 'Other']);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+    fetchCategories();
   }, []);
   
 
@@ -86,72 +79,42 @@ function Budget({ monthlyTotal }) {
       return;
     }
 
-    // COMMENTED OUT BACKEND CALL - USING DUMMY DATA FOR STYLING
-    // setLoading(true);
-    //  
-    // try {
-    //   const response = await fetch(`${API_URL}/budgets/setBudget`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     credentials: 'include',
-    //     body: JSON.stringify({ budget: budgetAmount, category })
-    //   });
+    setLoading(true);
+      
+    try {
+      const response = await fetch(`${API_URL}/budgets/setBudget`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ budget: budgetAmount, category })
+      });
 
-    //   if (response.ok) {
-    //     // Refresh the budgets list
-    //     const budgetsResponse = await fetch(`${API_URL}/budgets/getBudgets`, {
-    //       credentials: 'include'
-    //     });
-    //     
-    //     if (budgetsResponse.ok) {
-    //       const budgetsData = await budgetsResponse.json();
-    //       if (budgetsData.budgets && Array.isArray(budgetsData.budgets)) {
-    //         setBudgets(budgetsData.budgets);
-    //       }
-    //     }
-    //     
-    //     setBudgetInput('');
-    //     setCategory('');
-    //     alert('Budget set successfully!');
-    //   } else {
-    //     const errorData = await response.json();
-    //     alert(errorData.error || 'Failed to set budget');
-    //   }
-    // } catch (error) {
-    //   console.error('Error setting budget:', error);
-    //   alert('Error setting budget. Please try again.');
-    // } finally {
-    //   setLoading(false);
-    // }
-
-    // DUMMY DATA - Add to local state for styling
-    const newBudget = {
-      category: category,
-      month: monthKey,
-      budget: budgetAmount,
-      spent: 0,
-      remaining: budgetAmount
-    };
-
-    // Check if budget already exists for this category
-    const existingIndex = budgets.findIndex(b => b.category === category && b.month === monthKey);
-    
-    if (existingIndex >= 0) {
-      // Update existing budget
-      const updatedBudgets = [...budgets];
-      updatedBudgets[existingIndex] = { 
-        ...updatedBudgets[existingIndex], 
-        budget: budgetAmount, 
-        remaining: budgetAmount - updatedBudgets[existingIndex].spent 
-      };
-      setBudgets(updatedBudgets);
-    } else {
-      // Add new budget
-      setBudgets([...budgets, newBudget]);
+      if (response.ok) {
+        // Refresh the budgets list
+        const budgetsResponse = await fetch(`${API_URL}/budgets/getBudgets`, {
+          credentials: 'include'
+        });
+        
+        if (budgetsResponse.ok) {
+          const budgetsData = await budgetsResponse.json();
+          if (budgetsData.budgets && Array.isArray(budgetsData.budgets)) {
+            setBudgets(budgetsData.budgets);
+          }
+        }
+        
+        setBudgetInput('');
+        setCategory('');
+        alert('Budget set successfully!');
+      } else {
+        const errorData = await response.json();
+        alert(errorData.error || 'Failed to set budget');
+      }
+    } catch (error) {
+      console.error('Error setting budget:', error);
+      alert('Error setting budget. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    setBudgetInput('');
-    setCategory('');
    
 
   };

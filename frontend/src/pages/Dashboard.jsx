@@ -5,6 +5,7 @@ import StatsGrid from '../components/StatsGrid';
 import TransactionList from '../components/TransactionList';
 import Budget from '../components/Budget'
 import SpendingChart from '../components/SpendingChart'
+import ConnectBank from '../components/ConnectBank';
 import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
   
@@ -18,6 +19,7 @@ const user = localStorage.getItem('user');
   const [transactions, setTransactions] = useState([]);
   const [totalBalance, setTotalBalance] = useState(0);
   const [monthlyTotal, setMonthlyTotal] = useState(0);
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
   const [spendingData, setSpendingData] = useState([]);
 
   useEffect(() => {
@@ -42,25 +44,26 @@ const user = localStorage.getItem('user');
     setSpendingData(chartData);
   }, [transactions]);
 
-useEffect(() => {
-  const fetchTransactions = async () => {
-    try {
-      const response = await fetch(`${API_URL}/transactions`, {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Backend returned:', data);  // Debug
-        setTransactions(data.transactions || []);  // Default to empty array if undefined
-      } else {
-        console.log('Response not ok:', response.status);  // Debug
-      }
-    } catch (error) {
-      console.error('Error fetching transactions:', error);
+// Extract fetch function so it can be called from multiple places
+const fetchTransactions = async () => {
+  try {
+    const response = await fetch(`${API_URL}/transactions`, {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Backend returned:', data);  // Debug
+      setTransactions(data.transactions || []);  // Default to empty array if undefined
+    } else {
+      console.log('Response not ok:', response.status);  // Debug
     }
-  };
-  
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+  }
+};
+
+useEffect(() => {
   fetchTransactions();
 }, []);  // Run once to fetch transactions
 
@@ -84,6 +87,15 @@ useEffect(() => {
         if (monthlyResponse.ok) {
           const monthlyData = await monthlyResponse.json();
           setMonthlyTotal(monthlyData.monthlyTotal);
+        }
+
+        // Fetch monthly income
+        const incomeResponse = await fetch(`${API_URL}/monthlyIncome`, {
+          credentials: 'include',
+        });
+        if (incomeResponse.ok) {
+          const incomeData = await incomeResponse.json();
+          setMonthlyIncome(incomeData.monthlyIncome);
         }
       } catch (error) {
         console.error('Error fetching analytics:', error);
@@ -114,6 +126,47 @@ useEffect(() => {
       }
   };
 
+  // Function to delete transaction
+  const deleteTransaction = (transactionId) => {
+    setTransactions(prev => prev.filter(t => t.id !== transactionId));
+  };
+
+  // Callback for when bank connection succeeds
+  const handleBankConnectionSuccess = () => {
+    fetchTransactions();  // Refetch transactions
+    // Also refetch analytics
+    const refetchAnalytics = async () => {
+      try {
+        const balanceResponse = await fetch(`${API_URL}/totalBalance`, {
+          credentials: 'include',
+        });
+        if (balanceResponse.ok) {
+          const balanceData = await balanceResponse.json();
+          setTotalBalance(balanceData.totalBalance);
+        }
+
+        const monthlyResponse = await fetch(`${API_URL}/monthlyExpenses`, {
+          credentials: 'include',
+        });
+        if (monthlyResponse.ok) {
+          const monthlyData = await monthlyResponse.json();
+          setMonthlyTotal(monthlyData.monthlyTotal);
+        }
+
+        const incomeResponse = await fetch(`${API_URL}/monthlyIncome`, {
+          credentials: 'include',
+        });
+        if (incomeResponse.ok) {
+          const incomeData = await incomeResponse.json();
+          setMonthlyIncome(incomeData.monthlyIncome);
+        }
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      }
+    };
+    refetchAnalytics();
+  };
+
 // UI
   return (
     <div className="dashboard">
@@ -123,8 +176,10 @@ useEffect(() => {
         <StatsGrid 
           totalBalance={totalBalance}
           monthlyTotal={monthlyTotal}
-          transactionCount={transactions.length}
+          monthlyIncome={monthlyIncome}
         />
+        
+        <ConnectBank onConnectionSuccess={handleBankConnectionSuccess} />
         
         <div className="main-content">
           <div className="add-transaction-section">
@@ -132,7 +187,7 @@ useEffect(() => {
             <AddTransaction onAddTransaction={addTransaction} />
           </div>
           
-          <TransactionList transactions={transactions} />
+          <TransactionList transactions={transactions} onDeleteTransaction={deleteTransaction} />
         </div>
         <div className="budget-section">
           <Budget monthlyTotal={monthlyTotal}/>

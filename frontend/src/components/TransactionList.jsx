@@ -1,6 +1,6 @@
 import TransactionItem from './TransactionItem';
 
-function TransactionList({ transactions}) {
+function TransactionList({ transactions, onDeleteTransaction }) {
   return (
     <div className="recent-transactions">
             <h2>Recent Transactions</h2>
@@ -11,7 +11,11 @@ function TransactionList({ transactions}) {
                 </div>
               ) : (
                 transactions.map(transaction => (
-                    <TransactionItem key={transaction.id} transaction={transaction} />
+                    <TransactionItem 
+                      key={transaction.id} 
+                      transaction={transaction} 
+                      onDelete={onDeleteTransaction}
+                    />
           ))
         )}
             </div>
