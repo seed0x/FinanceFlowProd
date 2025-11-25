@@ -1,6 +1,8 @@
 import TransactionItem from './TransactionItem';
 
-function TransactionList({ transactions, onDeleteTransaction }) {
+function TransactionList({ transactions, onDeleteTransaction, onUpdateTransaction }) {
+
+
   return (
     <div className="recent-transactions">
             <h2>Recent Transactions</h2>
@@ -15,6 +17,7 @@ function TransactionList({ transactions, onDeleteTransaction }) {
                       key={transaction.id} 
                       transaction={transaction} 
                       onDelete={onDeleteTransaction}
+                      onUpdate={onUpdateTransaction}
                     />
           ))
         )}

@@ -245,6 +245,33 @@
   transform: scale(1.1);
 }
 
+.edit-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.edit-btn:hover {
+  background: #2980b9;
+  transform: scale(1.1);
+}
+
+.edit-btn img {
+  width: 14px;
+  height: 14px;
+  filter: brightness(0) invert(1); /* makes the svg white */
+}
+
 .no-transactions {
   text-align: center;
   padding: 2rem;

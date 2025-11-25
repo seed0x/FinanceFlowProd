@@ -131,6 +131,12 @@ useEffect(() => {
     setTransactions(prev => prev.filter(t => t.id !== transactionId));
   };
 
+  // function to update transaction 
+
+  const updateTransaction = (updatedTransaction) => {
+    setTransactions(prev => prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t));
+  };
+
   // Callback for when bank connection succeeds
   const handleBankConnectionSuccess = () => {
     fetchTransactions();  // Refetch transactions
@@ -187,7 +193,7 @@ useEffect(() => {
             <AddTransaction onAddTransaction={addTransaction} />
           </div>
           
-          <TransactionList transactions={transactions} onDeleteTransaction={deleteTransaction} />
+          <TransactionList transactions={transactions} onDeleteTransaction={deleteTransaction} onUpdateTransaction={updateTransaction} />
         </div>
         <div className="budget-section">
           <Budget monthlyTotal={monthlyTotal}/>
