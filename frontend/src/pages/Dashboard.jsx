@@ -20,9 +20,10 @@ const user = localStorage.getItem('user');
   const [totalBalance, setTotalBalance] = useState(0);
   const [monthlyTotal, setMonthlyTotal] = useState(0);
   const [monthlyIncome, setMonthlyIncome] = useState(0);
-  const [spendingData, setSpendingData] = useState([]);
+// const [spendingData, setSpendingData] = useState([]); 
+// using transactions to calculating spending now will delete later 
 
-  useEffect(() => {
+ /* useEffect(() => {
     // Calculate spending by category from transactions
     const spendingByCategory = {};
     
@@ -43,6 +44,8 @@ const user = localStorage.getItem('user');
     
     setSpendingData(chartData);
   }, [transactions]);
+
+  */
 
 // Extract fetch function so it can be called from multiple places
 const fetchTransactions = async () => {
@@ -199,7 +202,7 @@ useEffect(() => {
           <Budget monthlyTotal={monthlyTotal}/>
         </div>
         <div className="spending-chart-section">
-          <SpendingChart spendingData={spendingData} /> 
+          <SpendingChart transactions={transactions} /> 
         </div>
       </div>
     </div>
