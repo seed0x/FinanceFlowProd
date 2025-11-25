@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from flask import Blueprint, request, jsonify, session
 from db import db
-from models import Transaction
+from models import Transaction, Account
 
 transactions_bp = Blueprint("transactions", __name__)
 
@@ -16,7 +16,7 @@ def _to_dict(t: Transaction):
         "amount": float(t.amount),
         "merchant": t.merchant,
         "type": ("income" if t.amount and float(t.amount) > 0 else "expense"),
-        "timestamp": t.created_at.isoformat() if t.created_at else datetime.now().isoformat(),
+        "timestamp": t.date.isoformat(),  # Use actual transaction date, not created_at
         "user": session.get('user'),
     }
 #--------------------------------------------------------------------------------------------
@@ -65,8 +65,76 @@ def create_transaction():
         category=(data.get("category") or "Other"),
         amount=amt,
         merchant=data.get("merchant"),
+        account_id=data.get("account_id") if data.get("account_id") else None,
     )
     db.session.add(t)
     db.session.commit()
 
     return jsonify({"transaction": _to_dict(t)}), 201
+
+#--------------------------------------------------------------------------------------------
+# PUT /api/transactions/<id>
+@transactions_bp.put("/transactions/<int:transaction_id>")
+def update_transaction(transaction_id):
+    if "user" not in session:
+        return {"error": "Not logged in"}, 401
+    
+    uid = session["user_id"]
+    t = Transaction.query.filter_by(id=transaction_id, user_id=uid).first()
+    
+    if not t:
+        return {"error": "Transaction not found"}, 404
+    
+    data = request.get_json() or {}
+    
+    # Only allow category updates
+    if "category" in data:
+        t.category = data.get("category") or "Other"
+    else:
+        return {"error": "Category is required"}, 400
+    
+    db.session.add(t)
+    db.session.commit()
+    
+    return jsonify({"transaction": _to_dict(t)}), 200
+
+#--------------------------------------------------------------------------------------------
+# DELETE /api/transactions/<id>
+@transactions_bp.delete("/transactions/<int:transaction_id>")
+def delete_transaction(transaction_id):
+    if "user" not in session:
+        return {"error": "Not logged in"}, 401
+    
+    uid = session["user_id"]
+    t = Transaction.query.filter_by(id=transaction_id, user_id=uid).first()
+    
+    if not t:
+        return {"error": "Transaction not found"}, 404
+    
+    db.session.delete(t)
+    db.session.commit()
+    
+    return jsonify({"success": True, "message": "Transaction deleted"}), 200
+
+#--------------------------------------------------------------------------------------------
+# GET /api/accounts
+@transactions_bp.get("/accounts")
+def list_accounts():
+    if "user" not in session:
+        return {"error": "Not logged in"}, 401
+    
+    uid = session["user_id"]
+    accounts = Account.query.filter_by(user_id=uid).all()
+    
+    return jsonify({
+        "accounts": [
+            {
+                "id": a.id,
+                "name": a.name,
+                "mask": a.mask,
+                "type": a.type,
+                "subtype": a.subtype,
+            }
+            for a in accounts
+        ]
+    }), 200

@@ -75,5 +75,19 @@ def monthly_transactions():
         .scalar() or 0
     return jsonify({"monthlyTransactions": int(count)}), 200
 #-----------------------------------------------------------------------
+@analytics_bp.get("/monthlyIncome")
+def monthly_income():
+    is_user_logged_in = _require_user()
+    if is_user_logged_in: return is_user_logged_in
+
+    today = date.today()
+    total = db.session.query(func.coalesce(func.sum(Transaction.amount), 0))\
+        .filter(Transaction.user_id == session["user_id"],
+                func.extract("year", Transaction.date) == today.year,
+                func.extract("month", Transaction.date) == today.month,
+                Transaction.amount > 0)\
+        .scalar() or 0
+    return jsonify({"monthlyIncome": float(total)}), 200
+#-----------------------------------------------------------------------
 
 
