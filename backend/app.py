@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask import Flask, render_template, jsonify, request, redirect, url_for,session
 from dotenv import load_dotenv
 load_dotenv()
-from routes import transactions_bp, analytics_bp, auth_bp, budgets_bp, plaid_bp
+from routes import transactions_bp, analytics_bp, auth_bp, budgets_bp, plaid_bp, accounts_bp
 from status import status_bp
 
 from db import init_db
@@ -31,8 +31,7 @@ init_db(app)
 CORS(app, supports_credentials=True, origins=[
     "http://localhost:5173", 
     "http://localhost:5174", 
-    "https://finaceflow.onrender.com",
-    "https://finance-flow-rust.vercel.app"
+    "https://finflow-lime.vercel.app/"
 ], origin_regex=r"https://.*\.vercel\.app")
 
 # Register blueprints
@@ -42,6 +41,7 @@ app.register_blueprint(auth_bp, url_prefix="/api")
 app.register_blueprint(budgets_bp, url_prefix="/api")
 app.register_blueprint(status_bp)
 app.register_blueprint(plaid_bp, url_prefix="/api")
+app.register_blueprint(accounts_bp, url_prefix="/api")
 
 
 if __name__ == "__main__":
