@@ -3,7 +3,7 @@ from flask_cors import CORS
 from flask import Flask, render_template, jsonify, request, redirect, url_for,session
 from dotenv import load_dotenv
 load_dotenv()
-from routes import transactions_bp, analytics_bp, auth_bp, budgets_bp, plaid_bp, accounts_bp
+from routes import transactions_bp, analytics_bp, auth_bp, budgets_bp, plaid_bp
 from status import status_bp
 
 from db import init_db
