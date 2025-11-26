@@ -31,7 +31,9 @@ init_db(app)
 CORS(app, supports_credentials=True, origins=[
     "http://localhost:5173", 
     "http://localhost:5174", 
-    "https://finflow-lime.vercel.app/"
+    "myfinance-henna.vercel.app",
+    "myfinance-git-main-seedxs-projects.vercel.app",
+    "myfinance-omvmjfhqr-seedxs-projects.vercel.app"
 ], origin_regex=r"https://.*\.vercel\.app")
 
 # Register blueprints
