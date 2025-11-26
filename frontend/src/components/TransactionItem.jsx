@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import { getAuthHeaders } from '../utils/auth';
 import editIcon from '../assets/edit.svg'
 
 function TransactionItem({ transaction, onDelete, onUpdate }) {
@@ -32,8 +33,7 @@ function TransactionItem({ transaction, onDelete, onUpdate }) {
     try {
       const response = await fetch(`${API_URL}/transactions/${transaction.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: getAuthHeaders(),
         body: JSON.stringify({category: newCategory})
       });
 
@@ -66,7 +66,7 @@ function TransactionItem({ transaction, onDelete, onUpdate }) {
     try {
       const response = await fetch(`${API_URL}/transactions/${transaction.id}`, {
         method: 'DELETE',
-        credentials: 'include',
+        headers: getAuthHeaders(),
       });
 
       if (response.ok) {

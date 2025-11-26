@@ -1,10 +1,14 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
-
+import jwt
+import os
+from datetime import datetime, timedelta
 
 from models import db, User
+from auth_middleware import token_required
 
 auth_bp = Blueprint("auth", __name__)
+SECRET_KEY = os.getenv('SECRET_KEY', 't1am4-4t2am-t1am4-4t3am')
 
 @auth_bp.post('/login')
 def login():
@@ -18,27 +22,30 @@ def login():
         return {'success': False, 'error': 'Couldnt find you in the database'}, 401
     
     if user and check_password_hash(user.password, password):
-        session.clear()  # Clear any existing session data first
-        session['user'] = username
-        session['user_id'] = user.id
-        print(f"Session set: {session}")  # Debug
-        return {'success': True, 'user': username}, 200
+        # Generate JWT token
+        token = jwt.encode(
+            {
+                'user_id': user.id,
+                'username': username,
+                'exp': datetime.utcnow() + timedelta(days=30)  # Token expires in 30 days
+            },
+            SECRET_KEY,
+            algorithm='HS256'
+        )
+        return {'success': True, 'user': username, 'token': token}, 200
     else: 
         print("Login failed")  # Debug
         return {'success': False, 'error': 'Invalid credentials'}, 401
        
 
 @auth_bp.get('/user')
-def get_current_user():
-    print(f"Checking session: {session}")  # Debug
-    if 'user' not in session:
-        return {'error': 'Not logged in'}, 401
-    
-    return {'user': session['user']}, 200
+@token_required
+def get_current_user(current_user_id, current_username):
+    return {'user': current_username}, 200
 
 @auth_bp.post('/logout')
 def logout():
-    session.clear()  # Clear entire session
+    # With JWT, logout is handled client-side by removing the token
     return {'success': True}, 200
 
 # Sign-Up endpoint
@@ -56,7 +63,18 @@ def signup():
         user = User(username=username, password=hashed_password, email=email)
         db.session.add(user)
         db.session.commit()
-        return {'success': True, 'user': username}, 200  
+        
+        # Generate JWT token for new user
+        token = jwt.encode(
+            {
+                'user_id': user.id,
+                'username': username,
+                'exp': datetime.utcnow() + timedelta(days=30)
+            },
+            SECRET_KEY,
+            algorithm='HS256'
+        )
+        return {'success': True, 'user': username, 'token': token}, 200  
     else:
         print("You already have an account")  # Debug
         return {'success': False, 'error': 'Already registered'}, 401

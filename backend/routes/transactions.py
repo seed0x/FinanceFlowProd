@@ -1,12 +1,13 @@
 from datetime import date, datetime
 from decimal import Decimal
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 from db import db
 from models import Transaction, Account
+from auth_middleware import token_required
 
 transactions_bp = Blueprint("transactions", __name__)
 
-def _to_dict(t: Transaction):
+def _to_dict(t: Transaction, username=None):
     # include everything UI might render
     return {
         "id": t.id,
@@ -17,30 +18,24 @@ def _to_dict(t: Transaction):
         "merchant": t.merchant,
         "type": ("income" if t.amount and float(t.amount) > 0 else "expense"),
         "timestamp": t.date.isoformat(),  # Use actual transaction date, not created_at
-        "user": session.get('user'),
+        "user": username,
     }
 #--------------------------------------------------------------------------------------------
 @transactions_bp.get("/transactions")
-def list_transactions():
-    if 'user' not in session:
-        return {"error": "Not logged in"}, 401
-    
-    uid = session['user_id']
-    print(f"Fetching transactions for user={session.get('user')}, user_id={uid}")  # Debug
+@token_required
+def list_transactions(current_user_id, current_username):
+    print(f"Fetching transactions for user={current_username}, user_id={current_user_id}")  # Debug
     items = (Transaction.query
-             .filter_by(user_id=uid)
+             .filter_by(user_id=current_user_id)
              .order_by(Transaction.date.desc(), Transaction.id.desc())
              .all())
     print(f"Found {len(items)} transactions")  # Debug
-    return jsonify({"transactions": [_to_dict(t) for t in items]}), 200
+    return jsonify({"transactions": [_to_dict(t, current_username) for t in items]}), 200
 
 #-------------------------------------------------------------------------------------------
 @transactions_bp.post("/transactions")
-def create_transaction():
-    if "user" not in session:
-        return {"error": "Not logged in"}, 401
-    
-    uid = session["user_id"]
+@token_required
+def create_transaction(current_user_id, current_username):
     data = request.get_json() or {}
 
     d_str = data.get("date")
@@ -59,7 +54,7 @@ def create_transaction():
         amt = -amt
 
     t = Transaction(
-        user_id=uid,
+        user_id=current_user_id,
         date=d,
         description=data.get("description"),
         category=(data.get("category") or "Other"),
@@ -70,17 +65,14 @@ def create_transaction():
     db.session.add(t)
     db.session.commit()
 
-    return jsonify({"transaction": _to_dict(t)}), 201
+    return jsonify({"transaction": _to_dict(t, current_username)}), 201
 
 #--------------------------------------------------------------------------------------------
 # PUT /api/transactions/<id>
 @transactions_bp.put("/transactions/<int:transaction_id>")
-def update_transaction(transaction_id):
-    if "user" not in session:
-        return {"error": "Not logged in"}, 401
-    
-    uid = session["user_id"]
-    t = Transaction.query.filter_by(id=transaction_id, user_id=uid).first()
+@token_required
+def update_transaction(current_user_id, current_username, transaction_id):
+    t = Transaction.query.filter_by(id=transaction_id, user_id=current_user_id).first()
     
     if not t:
         return {"error": "Transaction not found"}, 404
@@ -96,17 +88,14 @@ def update_transaction(transaction_id):
     db.session.add(t)
     db.session.commit()
     
-    return jsonify({"transaction": _to_dict(t)}), 200
+    return jsonify({"transaction": _to_dict(t, current_username)}), 200
 
 #--------------------------------------------------------------------------------------------
 # DELETE /api/transactions/<id>
 @transactions_bp.delete("/transactions/<int:transaction_id>")
-def delete_transaction(transaction_id):
-    if "user" not in session:
-        return {"error": "Not logged in"}, 401
-    
-    uid = session["user_id"]
-    t = Transaction.query.filter_by(id=transaction_id, user_id=uid).first()
+@token_required
+def delete_transaction(current_user_id, current_username, transaction_id):
+    t = Transaction.query.filter_by(id=transaction_id, user_id=current_user_id).first()
     
     if not t:
         return {"error": "Transaction not found"}, 404
@@ -119,12 +108,9 @@ def delete_transaction(transaction_id):
 #--------------------------------------------------------------------------------------------
 # GET /api/accounts
 @transactions_bp.get("/accounts")
-def list_accounts():
-    if "user" not in session:
-        return {"error": "Not logged in"}, 401
-    
-    uid = session["user_id"]
-    accounts = Account.query.filter_by(user_id=uid).all()
+@token_required
+def list_accounts(current_user_id, current_username):
+    accounts = Account.query.filter_by(user_id=current_user_id).all()
     
     return jsonify({
         "accounts": [

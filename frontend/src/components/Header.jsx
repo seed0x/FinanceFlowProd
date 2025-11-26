@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { getAuthHeaders } from '../utils/auth'
 
 function Header({user}) {
   
@@ -11,12 +12,12 @@ const API_URL = import.meta.env.VITE_API_URL; // API URL prefix
     try {
       const response = await fetch(`${API_URL}/logout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        headers: getAuthHeaders(),
       });
           if (response.ok) {
             const data = await response.json();
             localStorage.removeItem('user');
+            localStorage.removeItem('token');  // Remove JWT token
             navigate('/login');
             console.log('Log-out Succesfully:', data);
           } else {
@@ -25,7 +26,7 @@ const API_URL = import.meta.env.VITE_API_URL; // API URL prefix
       } catch (error) {
 	       console.error('Error:', error);
       }
-  }; 
+  };
   
   return (
         <div className="dashboard">

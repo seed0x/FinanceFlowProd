@@ -7,6 +7,7 @@ import Budget from '../components/Budget'
 import SpendingChart from '../components/SpendingChart'
 import ConnectBank from '../components/ConnectBank';
 import { useNavigate } from 'react-router-dom';
+import { getAuthHeaders } from '../utils/auth';
 import './Dashboard.css';
   
 function Dashboard() {
@@ -51,7 +52,7 @@ const user = localStorage.getItem('user');
 const fetchTransactions = async () => {
   try {
     const response = await fetch(`${API_URL}/transactions`, {
-      credentials: 'include'
+      headers: getAuthHeaders()
     });
     
     if (response.ok) {
@@ -76,7 +77,7 @@ useEffect(() => {
       try {
         // Fetch total balance
         const balanceResponse = await fetch(`${API_URL}/totalBalance`, {
-          credentials: 'include',
+          headers: getAuthHeaders(),
         });
         if (balanceResponse.ok) {
           const balanceData = await balanceResponse.json();
@@ -85,7 +86,7 @@ useEffect(() => {
 
         // Fetch monthly expenses
         const monthlyResponse = await fetch(`${API_URL}/monthlyExpenses`, {
-          credentials: 'include',
+          headers: getAuthHeaders(),
         });
         if (monthlyResponse.ok) {
           const monthlyData = await monthlyResponse.json();
@@ -94,7 +95,7 @@ useEffect(() => {
 
         // Fetch monthly income
         const incomeResponse = await fetch(`${API_URL}/monthlyIncome`, {
-          credentials: 'include',
+          headers: getAuthHeaders(),
         });
         if (incomeResponse.ok) {
           const incomeData = await incomeResponse.json();
@@ -113,8 +114,7 @@ useEffect(() => {
     try {
       const response = await fetch(`${API_URL}/transactions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: 'include',
+        headers: getAuthHeaders(),
         body: JSON.stringify(newTransaction),
       });
           if (response.ok) {
@@ -147,7 +147,7 @@ useEffect(() => {
     const refetchAnalytics = async () => {
       try {
         const balanceResponse = await fetch(`${API_URL}/totalBalance`, {
-          credentials: 'include',
+          headers: getAuthHeaders(),
         });
         if (balanceResponse.ok) {
           const balanceData = await balanceResponse.json();
@@ -155,7 +155,7 @@ useEffect(() => {
         }
 
         const monthlyResponse = await fetch(`${API_URL}/monthlyExpenses`, {
-          credentials: 'include',
+          headers: getAuthHeaders(),
         });
         if (monthlyResponse.ok) {
           const monthlyData = await monthlyResponse.json();
@@ -163,7 +163,7 @@ useEffect(() => {
         }
 
         const incomeResponse = await fetch(`${API_URL}/monthlyIncome`, {
-          credentials: 'include',
+          headers: getAuthHeaders(),
         });
         if (incomeResponse.ok) {
           const incomeData = await incomeResponse.json();

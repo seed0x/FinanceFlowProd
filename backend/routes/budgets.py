@@ -1,27 +1,17 @@
-from flask import Blueprint, jsonify, session, request
+from flask import Blueprint, jsonify, request
 from datetime import date, datetime
 from sqlalchemy import func, case
 from models import db, Transaction, Budgets
+from auth_middleware import token_required
 
 budgets_bp = Blueprint("budgets", __name__)
-
-#Helper Function to check if the user logged is really logged in
-def _require_user():
-    if "user_id" not in session:
-        return jsonify({"error": "Not logged in"}), 401
-    return None
     
 #--------------------------------------------------------------------
 
 # POST /api/budgets/setBudget
 @budgets_bp.post("/budgets/setBudget")
-def setBudet():
-        
-    user_logged_in = _require_user()
-    if user_logged_in:
-        return user_logged_in  
-    
-    uid = session["user_id"]
+@token_required
+def setBudet(current_user_id, current_username):
     data = request.get_json() or {}
     
     category = data.get("category")
@@ -37,7 +27,7 @@ def setBudet():
         return jsonify({"error": "budget must be a number"}), 400
     
     b = Budgets(
-        user_id=uid,
+        user_id=current_user_id,
         category=category,
         amount=amount,
         date=datetime.strptime(month + "-01", "%Y-%m-%d").date(),
@@ -55,13 +45,8 @@ def setBudet():
 #------------------------------------------------------------------------
 
 @budgets_bp.get("/budgets/getBudgets")
-def list_budgets():
-    
-    user_logged_in = _require_user()
-    if user_logged_in:
-        return user_logged_in
-
-    uid = session["user_id"]
+@token_required
+def list_budgets(current_user_id, current_username):
     today = date.today()
     month_str = f"{today.year}-{today.month:02d}"
     
@@ -71,7 +56,7 @@ def list_budgets():
             func.sum(case((Transaction.amount < 0, -Transaction.amount), else_=0)),0,
         ).label("spent"),
     ).filter(
-        Transaction.user_id == uid,
+        Transaction.user_id == current_user_id,
         func.extract("year", Transaction.date) == today.year,
         func.extract("month", Transaction.date) == today.month,
     ).group_by(Transaction.category).all()
@@ -79,7 +64,7 @@ def list_budgets():
     spent_by_cat = {row.category: float(row.spent or 0.0) for row in spend_rows}
 
     budget_rows = Budgets.query.filter(
-        Budgets.user_id == uid,
+        Budgets.user_id == current_user_id,
         func.extract("year", Budgets.date) == today.year,
         func.extract("month", Budgets.date) == today.month,
     ).all()

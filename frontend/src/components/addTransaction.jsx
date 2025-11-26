@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getAuthHeaders } from '../utils/auth';
 import './AddTransaction.css';
 
 function AddTransaction({ onAddTransaction }) {
@@ -16,7 +17,7 @@ function AddTransaction({ onAddTransaction }) {
     const fetchAccounts = async () => {
       try {
         const response = await fetch(`${API_URL}/accounts`, {
-          credentials: 'include',
+          headers: getAuthHeaders(),
         });
         if (response.ok) {
           const data = await response.json();
@@ -30,7 +31,7 @@ function AddTransaction({ onAddTransaction }) {
     const fetchCategories = async () => {
       try {
         const response = await fetch(`${API_URL}/transactions`, {
-          credentials: 'include',
+          headers: getAuthHeaders(),
         });
         if (response.ok) {
           const data = await response.json();

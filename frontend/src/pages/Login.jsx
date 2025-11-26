@@ -29,11 +29,11 @@ const Login = ({ setUser }) => {
 		        method:"POST",
 		        headers: {"Content-Type": "application/json"},
 		        body: JSON.stringify(formData),
-                credentials: 'include',           
 	     });
           if (response.ok) {
             const data = await response.json();
             localStorage.setItem('user', data.user);
+            localStorage.setItem('token', data.token);  // Store JWT token
             setUser(data.user);
             navigate('/dashboard');
           } else {

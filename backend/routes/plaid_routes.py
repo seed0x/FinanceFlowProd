@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from decimal import Decimal
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.transactions_get_request import TransactionsGetRequest
@@ -11,24 +11,16 @@ from plaid.model.products import Products
 from plaid_client import plaid_client
 from db import db
 from models import User, Account, Transaction
+from auth_middleware import token_required
 
 plaid_bp = Blueprint("plaid", __name__)
-
-#Helper function to check if user logged in
-def _require_user():
-    if "user_id" not in session:
-        return jsonify({"error": "Not logged in"}), 401
-    return None
     
 #--------------------------------------------------------------------
 # POST /api/plaid/create-link-token
 @plaid_bp.post("/plaid/create-link-token")
-def create_link_token():
-    user_logged_in = _require_user()
-    if user_logged_in:
-        return user_logged_in
-    
-    user = User.query.get(session["user_id"])
+@token_required
+def create_link_token(current_user_id, current_username):
+    user = User.query.get(current_user_id)
     
     req = LinkTokenCreateRequest(
         user=LinkTokenCreateRequestUser(
@@ -46,12 +38,8 @@ def create_link_token():
 #--------------------------------------------------------------------
 # POST /api/plaid/exchange
 @plaid_bp.post("/plaid/exchange")
-def plaid_exchange():
-    user_logged_in = _require_user()
-    if user_logged_in:
-        return user_logged_in
-
-    uid = session["user_id"]
+@token_required
+def plaid_exchange(current_user_id, current_username):
     data = request.get_json() or {}
     token = data.get("public_token")
 
@@ -64,7 +52,7 @@ def plaid_exchange():
     access_token = resp["access_token"]
 
     # Save to user
-    user = User.query.get(uid)
+    user = User.query.get(current_user_id)
     user.plaid_access_token = access_token
     db.session.add(user)
 
@@ -78,7 +66,7 @@ def plaid_exchange():
             continue
 
         new_acc = Account(
-            user_id=uid,
+            user_id=current_user_id,
             plaid_account_id=acc["account_id"],
             name=acc.get("name"),
             mask=acc.get("mask"),
@@ -201,13 +189,9 @@ def _sync_transactions(user):
 #--------------------------------------------------------------------
 # POST /api/plaid/sync
 @plaid_bp.post("/plaid/sync")
-def plaid_sync():
-    user_logged_in = _require_user()
-    if user_logged_in:
-        return user_logged_in
-
-    uid = session["user_id"]
-    user = User.query.get(uid)
+@token_required
+def plaid_sync(current_user_id, current_username):
+    user = User.query.get(current_user_id)
 
     if not user or not user.plaid_access_token:
         return jsonify({"error": "No Plaid account connected"}), 400

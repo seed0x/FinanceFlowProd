@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
+import { getAuthHeaders } from '../utils/auth';
 import './Budget.css';
 
 function Budget({ monthlyTotal }) {
-  const API_URL = import.meta.env.VITE_API_URL; 
+  const API_URL = import.meta.env.VITE_API_URL;
   const [category, setCategory] = useState('');
   const [budgets, setBudgets] = useState([]);   // array of budgets from backend
   const [budgetInput, setBudgetInput] = useState('');
@@ -23,7 +24,7 @@ function Budget({ monthlyTotal }) {
     const fetchBudgets = async () => {
       try {
         const response = await fetch(`${API_URL}/budgets/getBudgets`, {
-          credentials: 'include'
+          headers: getAuthHeaders()
         });
         
         if (response.ok) {
@@ -43,7 +44,7 @@ function Budget({ monthlyTotal }) {
     const fetchCategories = async () => {
       try {
         const response = await fetch(`${API_URL}/transactions`, {
-          credentials: 'include',
+          headers: getAuthHeaders(),
         });
         if (response.ok) {
           const data = await response.json();
@@ -84,15 +85,14 @@ function Budget({ monthlyTotal }) {
     try {
       const response = await fetch(`${API_URL}/budgets/setBudget`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: getAuthHeaders(),
         body: JSON.stringify({ budget: budgetAmount, category })
       });
 
       if (response.ok) {
         // Refresh the budgets list
         const budgetsResponse = await fetch(`${API_URL}/budgets/getBudgets`, {
-          credentials: 'include'
+          headers: getAuthHeaders()
         });
         
         if (budgetsResponse.ok) {

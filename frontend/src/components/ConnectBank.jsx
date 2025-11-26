@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
+import { getAuthHeaders } from '../utils/auth';
 import './ConnectBank.css';
 
 function ConnectBank({ onConnectionSuccess }) {
@@ -14,7 +15,7 @@ function ConnectBank({ onConnectionSuccess }) {
   const fetchAccounts = async () => {
     try {
       const response = await fetch(`${API_URL}/accounts`, {
-        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       if (response.ok) {
         const data = await response.json();
@@ -38,7 +39,7 @@ function ConnectBank({ onConnectionSuccess }) {
     try {
       const response = await fetch(`${API_URL}/plaid/sync`, {
         method: 'POST',
-        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       
       if (response.ok) {
@@ -68,7 +69,7 @@ function ConnectBank({ onConnectionSuccess }) {
     try {
       const response = await fetch(`${API_URL}/plaid/create-link-token`, {
         method: 'POST',
-        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       
       if (response.ok) {
@@ -93,8 +94,7 @@ function ConnectBank({ onConnectionSuccess }) {
       // Exchange public token (auto-syncs transactions)
       const response = await fetch(`${API_URL}/plaid/exchange`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: getAuthHeaders(),
         body: JSON.stringify({ public_token: publicToken }),
       });
       

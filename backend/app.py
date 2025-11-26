@@ -1,6 +1,6 @@
 import os
 from flask_cors import CORS
-from flask import Flask, render_template, jsonify, request, redirect, url_for,session
+from flask import Flask
 from dotenv import load_dotenv
 load_dotenv()
 from routes import transactions_bp, analytics_bp, auth_bp, budgets_bp, plaid_bp
@@ -10,11 +10,8 @@ from db import init_db
 
 app = Flask(__name__)
 
-# CONFIG 
-app.secret_key = 't1am4-4t2am-t1am4-4t3am'
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin requests
-app.config['SESSION_COOKIE_SECURE'] = True  # Required when SameSite=None
-app.config['SESSION_COOKIE_HTTPONLY'] = True
+# CONFIG - JWT doesn't need session config
+app.secret_key = os.getenv('SECRET_KEY', 't1am4-4t2am-t1am4-4t3am')
 
 # right now SQLite by default, override with DATABASE_URL for getting Postgres
 database_url = os.getenv("DATABASE_URL", "sqlite:///financeflow.db")

@@ -30,18 +30,18 @@ export default function Signup() {
 		        method:"POST",
 		        headers: {"Content-Type": "application/json"},
 		        body: JSON.stringify(formData),
-            credentials: 'include',           
 	     });
           if (response.ok) {
             const data = await response.json();
-            navigate('/login');
+            localStorage.setItem('user', data.user);
+            localStorage.setItem('token', data.token);  // Store JWT token
+            navigate('/dashboard');  // Auto-login after signup
           } else {
             alert('Invalid credentials');
           }
       } catch (error) {
 	       console.error('Error:', error);
       }
-    console.log('Signup data:', formData);
   };
 
   return (
