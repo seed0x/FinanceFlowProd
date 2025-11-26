@@ -1,23 +1,15 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import './Budget.css';
+import BudgetCard from './BudgetCard';
 
-function Budget({ monthlyTotal }) {
+function Budget() {
   const API_URL = import.meta.env.VITE_API_URL; 
   const [category, setCategory] = useState('');
   const [budgets, setBudgets] = useState([]);   // array of budgets from backend
   const [budgetInput, setBudgetInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState(['Food', 'Transport', 'Entertainment', 'Utilities', 'Shopping', 'Healthcare', 'Education', 'Other']);
-
-//---------------------------------------------------------------------------
-  
- const monthKey = useMemo(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  }, []); 
-  
-//---------------------------------------------------------------------------
-      
+ 
   // Fetch all budgets from budgets api
   useEffect(() => {
     const fetchBudgets = async () => {
@@ -119,7 +111,6 @@ function Budget({ monthlyTotal }) {
 
   };
   
-//------------------------------------------------------------------
   
   return (
     <>
@@ -160,43 +151,19 @@ function Budget({ monthlyTotal }) {
           </button>
         </form>
 
-        {/* Display all budgets */}
+               {/* Display all budgets */}
         <div className="budget-display">
           {budgets.length > 0 ? (
-            budgets.map((budgetItem) => {
-              const percentage = budgetItem.budget > 0 
-                ? Math.min((budgetItem.spent / budgetItem.budget) * 100, 100) 
-                : 0;
-              const isOverBudget = budgetItem.spent > budgetItem.budget;
-              
-              return (
-                <div key={`${budgetItem.category}-${budgetItem.month}`} className="budget-card">
-                  <div className="budget-card-header">
-                    <h3 className="budget-title">{budgetItem.category} Budget</h3>
-                  </div>
-                  <div className="budget-info">
-                    <p>Budget: <span className="budget-amount">${budgetItem.budget.toFixed(2)}</span></p>
-                    <p>Spent: <span className="spent-amount">${budgetItem.spent.toFixed(2)}</span></p>
-                    
-                    {/* Progress bar */}
-                    <div className="budget-progress">
-                      <div 
-                        className={`budget-progress-bar ${isOverBudget ? 'danger' : percentage >= 75 ? 'warning' : ''}`}
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    
-                    <p>Remaining: <span className={`remaining-amount ${isOverBudget ? 'over-budget' : ''}`}>
-                      ${budgetItem.remaining.toFixed(2)}
-                    </span></p>
-                  </div>
-                </div>
-              );
-            })
+            budgets.map((budgetItem) => (
+              <BudgetCard 
+                key={budgetItem.id || `${budgetItem.category}-${budgetItem.month}`}
+                budgetItem={budgetItem}
+              />
+            ))
           ) : (
             <p style={{ color: '#6c757d', fontStyle: 'italic' }}>No budgets set yet. Create one above!</p>
           )}
-        </div>
+        </div>     
       </div>
     </>
   );

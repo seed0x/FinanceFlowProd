@@ -1,0 +1,120 @@
+.budget-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  padding: 1rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.budget-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.budget-card-header {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.budget-title {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.budget-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delete-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
+  transform: scale(1.1);
+}
+
+.budget-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.budget-info p {
+  font-size: 0.85rem;
+  color: #495057;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+
+.budget-amount {
+  color: #3498db;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.spent-amount {
+  color: #e74c3c;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.remaining-amount {
+  color: #27ae60;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.remaining-amount.over-budget {
+  color: #e74c3c;
+}
+
+.budget-progress {
+  margin: 0.5rem 0;
+  width: 100%;
+  height: 10px;
+  background: #e9ecef;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.budget-progress-bar {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  background: linear-gradient(90deg, #2ecc71 0%, #27ae60 100%);
+}
+
+.budget-progress-bar.warning {
+  background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+}
+
+.budget-progress-bar.danger {
+  background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+}
