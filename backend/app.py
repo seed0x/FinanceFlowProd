@@ -17,10 +17,11 @@ app.config['SESSION_COOKIE_SECURE'] = True  # Required when SameSite=None
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 
 # right now SQLite by default, override with DATABASE_URL for getting Postgres
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-    "DATABASE_URL",
-    "sqlite:///financeflow.db"
-)
+database_url = os.getenv("DATABASE_URL", "sqlite:///financeflow.db")
+# Fix for SQLAlchemy 2.x: postgres:// is deprecated, must use postgresql://
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Init ORM + Migratoins
