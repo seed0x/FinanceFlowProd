@@ -34,9 +34,17 @@ def upgrade():
         batch_op.add_column(sa.Column('plaid_item_id', sa.Integer(), nullable=True))
         batch_op.create_foreign_key('fk_account_plaid_item_id', 'plaid_item', ['plaid_item_id'], ['id'])
 
+    # Skip if constraints already exist (for partial migration recovery)
+    conn = op.get_bind()
+    inspector = sa.inspect(conn)
+    existing_constraints = {c['name'] for c in inspector.get_unique_constraints('transaction')}
+    existing_fks = {fk['name'] for fk in inspector.get_foreign_keys('transaction')}
+    
     with op.batch_alter_table('transaction', schema=None) as batch_op:
-        batch_op.create_unique_constraint('uq_transaction_plaid_tx_id', ['plaid_tx_id'])
-        batch_op.create_foreign_key('fk_transaction_account_id', 'account', ['account_id'], ['id'])
+        if 'uq_transaction_plaid_tx_id' not in existing_constraints:
+            batch_op.create_unique_constraint('uq_transaction_plaid_tx_id', ['plaid_tx_id'])
+        if 'fk_transaction_account_id' not in existing_fks:
+            batch_op.create_foreign_key('fk_transaction_account_id', 'account', ['account_id'], ['id'])
 
     # ### end Alembic commands ###
 
