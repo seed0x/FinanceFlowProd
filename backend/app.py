@@ -12,10 +12,9 @@ app = Flask(__name__)
 
 # CONFIG 
 app.secret_key = 't1am4-4t2am-t1am4-4t3am'
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = False  # Set True in production with HTTPS
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # Required for cross-origin requests
+app.config['SESSION_COOKIE_SECURE'] = True  # Required when SameSite=None
 app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_DOMAIN'] = 'localhost'
 
 # right now SQLite by default, override with DATABASE_URL for getting Postgres
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
@@ -31,10 +30,10 @@ init_db(app)
 CORS(app, supports_credentials=True, origins=[
     "http://localhost:5173", 
     "http://localhost:5174", 
-    "myfinance-henna.vercel.app",
-    "myfinance-git-main-seedxs-projects.vercel.app",
-    "myfinance-omvmjfhqr-seedxs-projects.vercel.app"
-], origin_regex=r"https://.*\.vercel\.app")
+    "https://myfinance-henna.vercel.app",
+    "https://myfinance-git-main-seedxs-projects.vercel.app",
+    "https://myfinance-omvmjfhqr-seedxs-projects.vercel.app"
+])
 
 # Register blueprints
 app.register_blueprint(transactions_bp, url_prefix="/api")
