@@ -90,6 +90,7 @@ def list_budgets():
         spent = spent_by_cat.get(b.category, 0.0)
         budget_amt = float(b.amount)
         result.append({
+            "id": b.id,
             "category": b.category,
             "month": month_str,
             "budget": budget_amt,
@@ -105,6 +106,62 @@ def list_budgets():
 
     return jsonify(resp), 200
     
+#------------------------------------------------------------------------
+
+@budgets_bp.put("/budgets/<int:budget_id>")
+def update_budget(budget_id):
+    """Update an existing budget's amount"""
+    user_logged_in = _require_user()
+    if user_logged_in:
+      return user_logged_in
+
+    uid = session["user_id"]
+    budget = Budgets.query.filter_by(id=budget_id, user_id=uid).first()
+
+    if not budget:
+      return jsonify({"error": "Budget not found"}), 404
+
+    data = request.get_json() or {}
+    new_amount = data.get("amount") or data.get("budget")
+
+    if new_amount is None:
+      return jsonify({"error": "Amount is required"}), 400
+
+    try:
+      new_amount = float(new_amount)
+      if new_amount <= 0:
+          return jsonify({"error": "Amount must be greater than 0"}), 400
+    except Exception:
+        return jsonify({"error": "Invalid amount"}), 400
+
+    # update budget amount
+    budget.amount = new_amount
+    db.session.commit()
+
+    # recalulate spent amount on response
+    today = date.today()
+    spend_row = db.session.query(
+        func.coalesce(
+            func.sum(case((Transaction.amount < 0, -Transaction.amount), else_=0)), 0
+        )
+    ).filter(
+        Transaction.user_id == uid,
+        Transaction.category == budget.category,
+        func.extract("year", Transaction.date) == today.year,
+        func.extract("month", Transaction.date) == today.month,
+    ).scalar()
+
+    spent = float(spend_row or 0.0)
+    budget_amt = float(budget.amount)
+
+    return jsonify({
+        "id": budget.id,
+        "category": budget.category,
+        "budget": budget_amt,
+        "spent": spent,
+        "remaining": round(budget_amt - spent, 2),
+        "month": f"{today.year}-{today.month:02d}",
+    }), 200
 #------------------------------------------------------------------------
 
 '''def spending_summary(user_id, month):
