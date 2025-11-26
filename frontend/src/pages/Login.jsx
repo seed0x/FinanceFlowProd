@@ -86,10 +86,10 @@ const Login = ({ setUser }) => {
                 marginBottom: '10px'
               }}
             >
-              Upgrade Now (Just Kidding)
+              Upgrade Now
             </button>
             <p style={{ fontSize: '12px', color: '#999', marginTop: '15px' }}>
-              Click to dismiss this fake paywall 😄
+              Click to dismiss this paywall
             </p>
           </div>
         </div>
