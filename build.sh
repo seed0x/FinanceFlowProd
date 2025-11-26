@@ -5,6 +5,5 @@ set -o errexit
 pip install -r requirements.txt
 
 # Run database migrations
-cd backend
 export FLASK_APP=app
 flask db upgrade
