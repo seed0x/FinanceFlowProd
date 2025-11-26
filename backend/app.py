@@ -33,7 +33,8 @@ CORS(app, supports_credentials=True, origins=[
     "http://localhost:5174", 
     "https://myfinance-henna.vercel.app",
     "https://myfinance-git-main-seedxs-projects.vercel.app",
-    "https://myfinance-omvmjfhqr-seedxs-projects.vercel.app"
+    "https://myfinance-omvmjfhqr-seedxs-projects.vercel.app",
+    "https://myfinance-mwsooblga-seedxs-projects.vercel.app"
 ])
 
 # Register blueprints
